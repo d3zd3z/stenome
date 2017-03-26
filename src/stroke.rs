@@ -1,7 +1,9 @@
 //! A Steno Stroke represents a set of keys that are pressed together on the keyboard.
 
 use ::Result;
+use serde::de;
 use std::fmt;
+use std::result;
 
 /// A Stroke is represented as a 32-bit unsigned integer, with a bit set for each key pressed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -23,6 +25,7 @@ impl Stroke {
                     return Err("Empty stroke".into());
                 }
                 result.push(Stroke(bits));
+                full_iter = FULL_STENO.chars().enumerate();
                 pos = 0;
                 bits = 0;
                 continue;
@@ -54,7 +57,7 @@ impl Stroke {
                             break;
                         }
                     }
-                    None => return Err("Invalid char in text".into()),
+                    None => return Err(format!("Invalid char in text: {:?} ({:?})", text, ch).into()),
                 }
             }
         }
@@ -112,6 +115,33 @@ impl fmt::Display for Stroke {
     }
 }
 
+// Deserialize for Stroke.
+impl de::Deserialize for Stroke {
+    fn deserialize<D>(deserializer: D) -> result::Result<Self, D::Error>
+        where D: de::Deserializer
+    {
+        deserializer.deserialize_str(StrokeVisitor)
+    }
+}
+
+struct StrokeVisitor;
+
+impl de::Visitor for StrokeVisitor {
+    type Value = Stroke;
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        write!(formatter, "a string representing a single steno stroke")
+    }
+
+    fn visit_str<E>(self, s: &str) -> result::Result<Stroke, E>
+        where E: de::Error
+    {
+        match Stroke::parse_stroke(s) {
+            Ok(str) => Ok(str),
+            Err(_) => Err(de::Error::invalid_value(de::Unexpected::Str(s), &self)),
+        }
+    }
+}
+
 static FULL_STENO: &'static str = "STKPWHRAO*EUFRPBLGTSDZ";
 static NUM_STENO: &'static str = "12K3W4R50*EU6R7B8G9SDZ";
 // static LEFT: u32 = 0x7f;
@@ -127,6 +157,7 @@ mod test {
 
     /// Test the full steno conversion.  Its fairly slow, but exhaustive on the round trip.
     #[test]
+    #[ignore]
     fn full_steno() {
         for i in 1 .. NUM {
             let a = Stroke(i);
