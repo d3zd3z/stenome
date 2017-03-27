@@ -8,9 +8,9 @@ use std::error;
 use std::result;
 
 pub use stroke::Stroke;
-pub use dict::{get_dict, get_lessons};
+pub use words::Words;
 
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
 
 mod stroke;
-mod dict;
+mod words;

@@ -5,9 +5,24 @@ use std::collections::BTreeMap;
 use stroke;
 use Stroke;
 
+/// The set of words we are working on.  This represents the current state.
+pub struct Words {
+    /// The unlearned words come directly from the json problem sets.
+    pub unlearned: Vec<Lesson>,
+}
+
+impl Words {
+    /// Construct a new word set from internal data.
+    pub fn new() -> Words {
+        Words {
+            unlearned: get_lessons(),
+        }
+    }
+}
+
 type Dict = BTreeMap<Vec<Stroke>, String>;
 
-pub fn get_dict() -> Dict {
+fn get_dict() -> Dict {
     let json = include_str!("dict-canonical.json");
     let main: BTreeMap<String, String> = serde_json::from_str(json).unwrap();
     let mut result = BTreeMap::new();
@@ -30,7 +45,7 @@ pub struct Lesson {
     pub words: Vec<(Vec<Stroke>, String)>,
 }
 
-pub fn get_lessons() -> Vec<Lesson> {
+fn get_lessons() -> Vec<Lesson> {
     let json = include_str!("lessons.json");
     let mut dict: Vec<(Vec<Stroke>, String)> = get_dict().into_iter().collect();
     let infos: Vec<LessonInfo> = serde_json::from_str(json).unwrap();
@@ -70,16 +85,10 @@ mod test {
     use super::*;
 
     #[test]
-    fn load_dict() {
-        let dict = get_dict();
-        println!("{} nodes to learn", dict.len());
-    }
-
-    #[test]
-    fn load_lessons() {
-        let lessons = get_lessons();
-        println!("{} lessons to cover", lessons.len());
-        for les in &lessons {
+    fn load_words() {
+        let words = Words::new();
+        println!("{} lessons", words.unlearned.len());
+        for les in &words.unlearned {
             println!("  lesson {} words: {}", les.words.len(), les.info.title);
         }
     }
