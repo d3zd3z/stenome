@@ -10,5 +10,5 @@ serde = "0.9"
 serde_derive = "0.9"
 
 # If we optimize the tests, it is reasonable to run the full tests.
-[profile.test]
-opt-level = 3
+#[profile.test]
+#opt-level = 3

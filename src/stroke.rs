@@ -147,7 +147,7 @@ static NUM_STENO: &'static str = "12K3W4R50*EU6R7B8G9SDZ";
 // static LEFT: u32 = 0x7f;
 static MID: u32 = 0xf80;
 static RIGHT: u32 = 0x3ff000;
-static NUM: u32 = 0x400000;
+pub static NUM: u32 = 0x400000;
 static NUMS: u32 = 0x551ab;
 static FSTROKE: u32 = 0x1000;
 
