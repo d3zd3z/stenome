@@ -1,7 +1,7 @@
 //! A Steno Stroke represents a set of keys that are pressed together on the keyboard.
 
 use ::Result;
-use serde::de;
+use serde::{de, ser};
 use std::fmt;
 use std::result;
 
@@ -112,6 +112,16 @@ impl fmt::Display for Stroke {
         }
 
         Ok(())
+    }
+}
+
+// Serialize for Stroke.
+impl ser::Serialize for Stroke {
+    fn serialize<S>(&self, serializer: S) -> result::Result<S::Ok, S::Error>
+        where S: ser::Serializer
+    {
+        let text = format!("{}", self);
+        serializer.serialize_str(&text)
     }
 }
 
