@@ -43,6 +43,33 @@ impl Words {
         rename(tmp, path)?;
         Ok(())
     }
+
+    /// Extract a new word to learn.  Returns None if there are no more words.
+    pub fn get_unlearned(&mut self) -> Option<LearnWord> {
+        let mut lesson = match self.unlearned.pop() {
+            None => return None,
+            Some (l) => l,
+        };
+
+        let (strokes, english) = lesson.words.pop().expect("Words in list");
+
+        let result = LearnWord {
+            strokes: strokes,
+            english: english,
+        };
+
+        // If there are more words in this lesson, push the lesson back.
+        if !lesson.words.is_empty() {
+            self.unlearned.push(lesson);
+        }
+
+        Some(result)
+    }
+}
+
+pub struct LearnWord {
+    pub strokes: Vec<Stroke>,
+    pub english: String,
 }
 
 type Dict = BTreeMap<Vec<Stroke>, String>;
@@ -80,14 +107,17 @@ fn get_lessons() -> Vec<Lesson> {
     // Work through the lessons in order, assigning the problems to the first lesson that makes
     // sense.
     for info in infos {
-        let (with, without) = dict.into_iter().partition(|item| {
+        let (mut with, without): (Vec<_>, Vec<_>) = dict.into_iter().partition(|item| {
             let value = item.0[0].0;
             (value & !info.include.0 == 0) && (value & info.require.0 != 0)
         });
-        result.push(Lesson {
-            info: info,
-            words: with,
-        });
+        with.reverse();
+        if !with.is_empty() {
+            result.push(Lesson {
+                info: info,
+                words: with,
+            });
+        }
         dict = without;
     }
 
@@ -104,6 +134,8 @@ fn get_lessons() -> Vec<Lesson> {
         },
         words: dict,
     });
+
+    result.reverse();
 
     result
 }
