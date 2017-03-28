@@ -1,5 +1,6 @@
 // The dictionary used for the lessons.
 
+use rand::{Rng, thread_rng};
 use serde_json;
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
@@ -130,7 +131,8 @@ impl LearnWord {
     }
 
     fn adjust(&mut self, factor: f64) {
-        self.interval *= factor;
+        let mut rng = thread_rng();
+        self.interval *= factor * rng.gen_range(0.95, 1.05);
         self.next = now() + self.interval;
     }
 }
