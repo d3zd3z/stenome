@@ -88,6 +88,10 @@ impl Stroke {
     pub fn is_star(&self) -> bool {
         self.0 == STAR_STROKE
     }
+
+    pub fn make_star() -> Stroke {
+        Stroke(STAR_STROKE)
+    }
 }
 
 impl fmt::Display for Stroke {
