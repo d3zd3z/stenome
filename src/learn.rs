@@ -54,8 +54,10 @@ impl Learn {
 
     // Learn a single word, updating its timing information based on how well it was learned.
     fn single(&mut self, word: &mut LearnWord) -> Status {
-        writeln!(self.term, "\r\nActive: {}, Interval {:.1}\r",
-                 self.words.active_count(),
+        let counts = self.words.get_counts();
+
+        writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {:.1}\r",
+                 counts.active, counts.later, counts.unlearned,
                  word.interval).unwrap();
         self.term.flush().unwrap();
 

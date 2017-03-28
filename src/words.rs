@@ -95,11 +95,21 @@ impl Words {
     }
 
     /// Return a count of the number of words that are pending.
-    pub fn active_count(&self) -> usize {
+    pub fn get_counts(&self) -> Counts {
         let n = now();
 
-        self.learning.iter().filter(|x| x.next < n).count()
+        Counts {
+            active: self.learning.iter().filter(|x| x.next < n).count(),
+            later: self.learning.iter().filter(|x| x.next >= n).count(),
+            unlearned: self.unlearned.iter().map(|x| x.words.len()).sum(),
+        }
     }
+}
+
+pub struct Counts {
+    pub active: usize,
+    pub later: usize,
+    pub unlearned: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
