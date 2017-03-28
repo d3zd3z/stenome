@@ -83,6 +83,11 @@ impl Stroke {
         }
         Ok(stroke)
     }
+
+    /// Is this stroke just the '*'
+    pub fn is_star(&self) -> bool {
+        self.0 == STAR_STROKE
+    }
 }
 
 impl fmt::Display for Stroke {
@@ -160,6 +165,7 @@ static RIGHT: u32 = 0x3ff000;
 pub static NUM: u32 = 0x400000;
 static NUMS: u32 = 0x551ab;
 static FSTROKE: u32 = 0x1000;
+static STAR_STROKE: u32 = 0x200;
 
 #[cfg(test)]
 mod test {

@@ -1,9 +1,11 @@
 // The dictionary used for the lessons.
 
 use serde_json;
+use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::fs::{File, rename};
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 use stroke::{self, Stroke};
 use ::Result;
 
@@ -12,6 +14,8 @@ use ::Result;
 pub struct Words {
     /// The unlearned words come directly from the json problem sets.
     pub unlearned: Vec<Lesson>,
+
+    pub learning: Vec<LearnWord>,
 }
 
 impl Words {
@@ -19,6 +23,7 @@ impl Words {
     pub fn new() -> Words {
         Words {
             unlearned: get_lessons(),
+            learning: vec![],
         }
     }
 
@@ -56,6 +61,8 @@ impl Words {
         let result = LearnWord {
             strokes: strokes,
             english: english,
+            next: now() + 5.0,
+            interval: 5.0,
         };
 
         // If there are more words in this lesson, push the lesson back.
@@ -65,11 +72,64 @@ impl Words {
 
         Some(result)
     }
+
+    /// Extract a word to be learned, if were ready for it.
+    pub fn get_learned(&mut self) -> Option<LearnWord> {
+        match self.learning.pop() {
+            None => None,
+            Some(w) => {
+                if now() >= w.next {
+                    Some(w)
+                } else {
+                    self.learning.push(w);
+                    None
+                }
+            }
+        }
+    }
+
+    /// Push a word back into the unlearned word list.
+    pub fn push_word(&mut self, word: LearnWord) {
+        self.learning.push(word);
+        self.learning.sort_by(word_cmp);
+    }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LearnWord {
     pub strokes: Vec<Stroke>,
     pub english: String,
+    pub next: f64,
+    pub interval: f64,
+}
+
+impl LearnWord {
+    pub fn correct(&mut self) {
+        self.adjust(1.5)
+    }
+
+    pub fn incorrect(&mut self) {
+        self.adjust(0.5)
+    }
+
+    fn adjust(&mut self, factor: f64) {
+        self.interval *= factor;
+        self.next = now() + self.interval;
+    }
+}
+
+// Comparison is reversed to make it easy to have the newest at the end.
+fn word_cmp(a: &LearnWord, b: &LearnWord) -> Ordering {
+    b.next.partial_cmp(&a.next).unwrap()
+}
+
+// Get the current time as ticks.
+fn now() -> f64 {
+    let stamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+    let sec = stamp.as_secs();
+    let nsec = stamp.subsec_nanos();
+
+    sec as f64 + (nsec as f64 / 1.0e9)
 }
 
 type Dict = BTreeMap<Vec<Stroke>, String>;

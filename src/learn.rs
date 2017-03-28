@@ -1,6 +1,7 @@
 // Learning.
 
 use term::Term;
+use stroke::Stroke;
 use words::{LearnWord, Words};
 
 use std::io::Write;
@@ -27,15 +28,25 @@ impl Learn {
         loop {
             // TODO: Check for things that have expired we need to learn.
 
-            let mut word = match self.words.get_unlearned() {
+            let mut word = match self.words.get_learned() {
                 None => {
-                    println!("No more words to learn\r");
-                    return;
+                    match self.words.get_unlearned() {
+                        None => {
+                            println!("No more words to learn\r");
+                            return;
+                        },
+                        Some(word) => word,
+                    }
                 }
                 Some(word) => word,
             };
 
-            if self.single(&mut word) == Status::Stopped {
+            let status = self.single(&mut word);
+
+            // Return the word.
+            self.words.push_word(word);
+
+            if status == Status::Stopped {
                 break;
             }
         }
@@ -43,29 +54,92 @@ impl Learn {
 
     // Learn a single word, updating its timing information based on how well it was learned.
     fn single(&mut self, word: &mut LearnWord) -> Status {
-        // Loop until we get it right.
-        if word.strokes.len() != 1 {
-            panic!("TODO");
+        // let mut user = vec![];
+
+        let mut state = Single::new(&mut self.term, word);
+
+        state.run()
+    }
+}
+
+struct Single<'t, 'w> {
+    term: &'t mut Term,
+    word: &'w mut LearnWord,
+    user: Vec<Stroke>,
+    errors: u32,
+}
+
+impl<'t, 'w> Single<'t, 'w> {
+    fn new<'tt, 'ww>(term: &'tt mut Term, word: &'ww mut LearnWord) -> Single<'tt, 'ww> {
+        Single {
+            term: term,
+            word: word,
+            user: vec![],
+            errors: 0,
         }
+    }
+
+    fn prompt(&mut self) {
+        write!(self.term, "\r\x1b[J{:20}: {}{}",
+               self.word.english,
+               if self.word.strokes == self.user { '✓' } else { ' ' },
+               slashed(&self.user)).unwrap();
+        if self.errors > 0 {
+            write!(self.term, "  ({})", slashed(&self.word.strokes)).unwrap();
+        }
+        self.term.flush().unwrap();
+    }
+
+    fn run(&mut self) -> Status {
+        let mut result = Status::Continue;
         loop {
-            write!(self.term, "{:20}: ", word.english).unwrap();
-            self.term.flush().unwrap();
+            self.prompt();
+            if self.word.strokes == self.user {
+                break;
+            }
+
             let stroke = match self.term.read_stroke().unwrap() {
-                None => return Status::Stopped,
+                None => { result = Status::Stopped; break; }
                 Some(st) => st,
             };
-            if stroke == word.strokes[0] {
-                writeln!(self.term, "✓ {}\r", stroke).unwrap();
-                self.term.flush().unwrap();
-                break;
+            if stroke.is_star() {
+                self.user.pop();
             } else {
-                // TODO: Should wait for a correction.
-                writeln!(self.term, "✗ {} ({})\r", stroke, word.strokes[0]).unwrap();
-                self.term.flush().unwrap();
+                self.user.push(stroke);
+                let pos = self.user.len();
+                if pos > self.word.strokes.len() ||
+                    self.user[pos-1] != self.word.strokes[pos-1]
+                {
+                    self.errors += 1;
+                }
             }
         }
-        Status::Continue
+
+        if self.errors > 0 {
+            self.word.incorrect();
+        } else {
+            self.word.correct();
+        }
+
+        writeln!(self.term, "\r").unwrap();
+        self.term.flush().unwrap();
+        result
     }
+}
+
+// Generate a slash separated version of the given stroke list.
+fn slashed(strokes: &[Stroke]) -> String {
+    let mut buf = vec![];
+    let mut first = true;
+
+    for st in strokes {
+        if !first {
+            buf.push(b'/');
+        }
+        first = false;
+        write!(&mut buf, "{}", st).unwrap();
+    }
+    String::from_utf8(buf).unwrap()
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
