@@ -82,11 +82,14 @@ impl<'t, 'w> Single<'t, 'w> {
     fn prompt(&mut self) {
         write!(self.term, "\r\x1b[J{:20}: {}{}",
                self.word.english,
-               if self.word.strokes == self.user { '✓' } else { ' ' },
+               if self.word.strokes == self.user {
+                   if self.errors == 0 { '✓' } else { '✗' }
+               } else { ' ' },
                slashed(&self.user)).unwrap();
         if self.errors > 0 {
             write!(self.term, "  ({})", slashed(&self.word.strokes)).unwrap();
         }
+        write!(self.term, " [{:.2}]", self.word.interval).unwrap();
         self.term.flush().unwrap();
     }
 
