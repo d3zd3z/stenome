@@ -54,10 +54,12 @@ impl Learn {
 
     // Learn a single word, updating its timing information based on how well it was learned.
     fn single(&mut self, word: &mut LearnWord) -> Status {
-        // let mut user = vec![];
+        writeln!(self.term, "\r\nActive: {}, Interval {:.1}\r",
+                 self.words.active_count(),
+                 word.interval).unwrap();
+        self.term.flush().unwrap();
 
         let mut state = Single::new(&mut self.term, word);
-
         state.run()
     }
 }
@@ -89,7 +91,6 @@ impl<'t, 'w> Single<'t, 'w> {
         if self.errors > 0 {
             write!(self.term, "  ({})", slashed(&self.word.strokes)).unwrap();
         }
-        write!(self.term, " [{:.2}]", self.word.interval).unwrap();
         self.term.flush().unwrap();
     }
 

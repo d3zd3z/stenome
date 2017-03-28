@@ -93,6 +93,13 @@ impl Words {
         self.learning.push(word);
         self.learning.sort_by(word_cmp);
     }
+
+    /// Return a count of the number of words that are pending.
+    pub fn active_count(&self) -> usize {
+        let n = now();
+
+        self.learning.iter().filter(|x| x.next < n).count()
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
