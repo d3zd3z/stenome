@@ -165,16 +165,28 @@ pub struct LearnWord {
 
 impl LearnWord {
     pub fn correct(&mut self) {
-        self.adjust(1.5)
+        self.adjust(2.2)
     }
 
     pub fn incorrect(&mut self) {
-        self.adjust(0.5)
+        self.adjust(0.25)
     }
 
     fn adjust(&mut self, factor: f64) {
         let mut rng = thread_rng();
-        self.interval *= factor * rng.gen_range(0.95, 1.05);
+        let n = now();
+        // If we've gone past the deadline, add this time to the interval.
+        let interval = if factor > 1.0 {
+            if n > self.next {
+                self.interval + (n - self.next)
+            } else {
+                self.interval
+            }
+        } else {
+            self.interval
+        };
+        // Compute the interval, capping with a minimum of 5 seconds.
+        self.interval = (interval * factor * rng.gen_range(0.75, 1.25)).max(5.0);
         self.next = now() + self.interval;
     }
 }
