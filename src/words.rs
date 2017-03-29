@@ -99,10 +99,31 @@ impl Words {
     pub fn get_counts(&self) -> Counts {
         let n = now();
 
+        // Divide all of the upcoming entries into buckets.
+        let mut counts = vec![0; COUNT_BUCKETS.len()];
+
+        for word in &self.learning {
+            let mut v = word.interval;
+            for (num, b) in COUNT_BUCKETS.iter().enumerate() {
+                if v < b.limit {
+                    counts[num] += 1;
+                    break;
+                }
+                v /= b.limit;
+            }
+        }
+
+        let buckets = COUNT_BUCKETS.iter().zip(counts).map(|(aa, bb)| Bucket {
+            name: aa.name,
+            count: bb,
+        }).collect();
+
         Counts {
             active: self.learning.iter().filter(|x| x.next < n).count(),
             later: self.learning.iter().filter(|x| x.next >= n).count(),
             unlearned: self.unlearned.iter().map(|x| x.words.len()).sum(),
+
+            buckets: buckets,
         }
     }
 }
@@ -111,7 +132,28 @@ pub struct Counts {
     pub active: usize,
     pub later: usize,
     pub unlearned: usize,
+
+    // Buckets for later.  The sum of all of these should match the `later+active` value above.
+    pub buckets: Vec<Bucket>,
 }
+
+pub struct Bucket {
+    pub name: &'static str,
+    pub count: usize,
+}
+
+struct BucketBin {
+    name: &'static str,
+    limit: f64,
+}
+
+static COUNT_BUCKETS: &'static [BucketBin] = &[
+    BucketBin{ name: "sec", limit: 60.0 },
+    BucketBin{ name: "min", limit: 60.0 },
+    BucketBin{ name: "hr", limit: 24.0 },
+    BucketBin{ name: "day", limit: 30.0 },
+    BucketBin{ name: "mon", limit: 1.0e30 },
+];
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LearnWord {

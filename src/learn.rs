@@ -59,6 +59,11 @@ impl Learn {
         writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {}\r",
                  counts.active, counts.later, counts.unlearned,
                  humanize_time(word.interval)).unwrap();
+        for b in &counts.buckets {
+            writeln!(self.term, "  {:-4}: {:4} {}\r", b.name, b.count,
+                     stars(65, b.count, counts.active + counts.later)).unwrap();
+        }
+        writeln!(self.term, "\r").unwrap();
         self.term.flush().unwrap();
 
         let mut state = Single::new(&mut self.term, word);
@@ -89,8 +94,26 @@ static UNITS: &'static [UnitEntry] = &[
     UnitEntry{ name: "minutes", div: 60.0 },
     UnitEntry{ name: "hours", div: 24.0 },
     UnitEntry{ name: "days", div: 365.0 },
+    UnitEntry{ name: "months", div: 12.0 },
     UnitEntry{ name: "years", div: 1.0e6 },
 ];
+
+// Print a line of stars resembling a histogram bar.  `len` is the number of stars to use, a is the
+// number in question, and total is the expected total.
+fn stars(len: usize, value: usize, total: usize) -> String {
+    let mut buf = String::new();
+    buf.push('|');
+    let thresh = value as f64 / total as f64 * len as f64;
+    for i in 0 .. len {
+        if (i as f64) < thresh {
+            buf.push('*');
+        } else {
+            buf.push(' ');
+        };
+    }
+    buf.push('|');
+    buf
+}
 
 struct Single<'t, 'w> {
     term: &'t mut Term,
