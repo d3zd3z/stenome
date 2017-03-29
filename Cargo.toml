@@ -2,6 +2,10 @@
 name = "stenome"
 version = "0.1.0"
 authors = ["davidb"]
+description = "Plover drills, inspired by the Plover Dojo.  With SRS."
+readme = "README.rst"
+keywords = ["steno", "plover", "srs"]
+license = "MIT"
 
 [dependencies]
 rand = "0.3"
