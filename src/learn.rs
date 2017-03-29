@@ -170,13 +170,17 @@ impl<'t, 'w> Single<'t, 'w> {
             }
         }
 
-        if self.errors > 0 {
-            self.word.incorrect();
-        } else {
-            self.word.correct();
-        }
+        if result == Status::Continue {
+            if self.errors > 0 {
+                self.word.incorrect();
+            } else {
+                self.word.correct();
+            }
 
-        writeln!(self.term, "\r").unwrap();
+            writeln!(self.term, "\r\nNew interval {}\r", humanize_time(self.word.interval)).unwrap();
+        } else {
+            writeln!(self.term, "\r").unwrap();
+        }
         self.term.flush().unwrap();
         result
     }
