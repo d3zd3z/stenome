@@ -56,15 +56,41 @@ impl Learn {
     fn single(&mut self, word: &mut LearnWord) -> Status {
         let counts = self.words.get_counts();
 
-        writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {:.1}\r",
+        writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {}\r",
                  counts.active, counts.later, counts.unlearned,
-                 word.interval).unwrap();
+                 humanize_time(word.interval)).unwrap();
         self.term.flush().unwrap();
 
         let mut state = Single::new(&mut self.term, word);
         state.run()
     }
 }
+
+// Format an interval (in seconds) in terms of nicer units.
+fn humanize_time(interval: f64) -> String {
+    let mut val = interval;
+    for unit in UNITS {
+        if val < unit.div {
+            return format!("{:.1} {}", val, unit.name);
+        }
+        val /= unit.div;
+    }
+    // Out of bounds, return the unmodified time.
+    format!("{:.1} seconds", interval)
+}
+
+struct UnitEntry {
+    name: &'static str,
+    div: f64,
+}
+
+static UNITS: &'static [UnitEntry] = &[
+    UnitEntry{ name: "seconds", div: 60.0 },
+    UnitEntry{ name: "minutes", div: 60.0 },
+    UnitEntry{ name: "hours", div: 24.0 },
+    UnitEntry{ name: "days", div: 365.0 },
+    UnitEntry{ name: "years", div: 1.0e6 },
+];
 
 struct Single<'t, 'w> {
     term: &'t mut Term,
