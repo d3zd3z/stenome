@@ -10,10 +10,6 @@ use termion::color;
 pub struct Learn {
     words: Words,
     term: Term,
-
-    // How many of the words are we getting right.  TODO: Store this in the datafile instead of
-    // regenerating it each time.
-    ratio: f64,
 }
 
 impl Learn {
@@ -21,7 +17,6 @@ impl Learn {
         Learn {
             words: words,
             term: term,
-            ratio: 1.0,
         }
     }
 
@@ -52,15 +47,6 @@ impl Learn {
             // Return the word.
             self.words.push_word(word);
 
-            match status {
-                Status::Stopped => break,
-                Status::Continue(true) => {
-                    self.ratio = self.ratio * 0.97 + 0.03;
-                }
-                Status::Continue(false) => {
-                    self.ratio = self.ratio * 0.97;
-                }
-            }
             if status == Status::Stopped {
                 break;
             }
@@ -71,10 +57,9 @@ impl Learn {
     fn single(&mut self, word: &mut LearnWord) -> Status {
         let counts = self.words.get_counts();
 
-        writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {}, Ratio {:.1}\r",
+        writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {}\r",
                  counts.active, counts.later, counts.unlearned,
-                 humanize_time(word.interval),
-                 self.ratio * 100.0).unwrap();
+                 humanize_time(word.interval)).unwrap();
         for b in &counts.buckets {
             writeln!(self.term, "  {:-4}: {:4} {}\r", b.name, b.count,
                      stars(65, b.count, counts.active + counts.later)).unwrap();
@@ -162,11 +147,10 @@ impl<'t, 'w> Single<'t, 'w> {
     }
 
     fn run(&mut self) -> Status {
-        let result;
+        let mut result = Status::Continue;
         loop {
             self.prompt();
             if self.word.strokes == self.user {
-                result = Status::Continue(self.errors == 0);
                 break;
             }
 
@@ -187,19 +171,16 @@ impl<'t, 'w> Single<'t, 'w> {
             }
         }
 
-        match result {
-            Status::Continue(right) => {
-                if right {
-                    self.word.correct();
-                } else {
-                    self.word.incorrect();
-                }
+        if result == Status::Continue {
+            if self.errors > 0 {
+                self.word.incorrect();
+            } else {
+                self.word.correct();
+            }
 
-                writeln!(self.term, "\r\nNew interval {}\r", humanize_time(self.word.interval)).unwrap();
-            }
-            Status::Stopped => {
-                writeln!(self.term, "\r").unwrap();
-            }
+            writeln!(self.term, "\r\nNew interval {}\r", humanize_time(self.word.interval)).unwrap();
+        } else {
+            writeln!(self.term, "\r").unwrap();
         }
         self.term.flush().unwrap();
         result
@@ -235,7 +216,6 @@ fn slashed(strokes: &[Stroke], expected: &[Stroke]) -> String {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum Status {
-    // Continue learning, and returns if the word is correct.
-    Continue(bool),
+    Continue,
     Stopped,
 }
