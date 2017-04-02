@@ -174,17 +174,7 @@ impl LearnWord {
 
     fn adjust(&mut self, factor: f64) {
         let mut rng = thread_rng();
-        let n = now();
-        // If we've gone past the deadline, add this time to the interval.
-        let interval = if factor > 1.0 {
-            if n > self.next {
-                self.interval + (n - self.next)
-            } else {
-                self.interval
-            }
-        } else {
-            self.interval
-        };
+        let interval = self.interval;
         // Compute the interval, capping with a minimum of 5 seconds.
         self.interval = (interval * factor * rng.gen_range(0.75, 1.25)).max(5.0);
         self.next = now() + self.interval;
