@@ -5,6 +5,7 @@ use stroke::Stroke;
 use words::{LearnWord, Words};
 
 use std::io::Write;
+use termion::color;
 
 pub struct Learn {
     words: Words,
@@ -138,9 +139,9 @@ impl<'t, 'w> Single<'t, 'w> {
                if self.word.strokes == self.user {
                    if self.errors == 0 { '✓' } else { '✗' }
                } else { ' ' },
-               slashed(&self.user)).unwrap();
+               slashed(&self.user, &self.word.strokes)).unwrap();
         if self.errors > 0 {
-            write!(self.term, "  ({})", slashed(&self.word.strokes)).unwrap();
+            write!(self.term, "  ({})", slashed(&self.word.strokes, &self.word.strokes)).unwrap();
         }
         self.term.flush().unwrap();
     }
@@ -187,16 +188,28 @@ impl<'t, 'w> Single<'t, 'w> {
 }
 
 // Generate a slash separated version of the given stroke list.
-fn slashed(strokes: &[Stroke]) -> String {
+fn slashed(strokes: &[Stroke], expected: &[Stroke]) -> String {
     let mut buf = vec![];
     let mut first = true;
 
-    for st in strokes {
+    for (i, st) in strokes.iter().enumerate() {
         if !first {
             buf.push(b'/');
         }
         first = false;
+
+        let correct = expected.get(i) == Some(st);
+        if !correct {
+            write!(&mut buf, "{}{}",
+                   color::Bg(color::LightRed),
+                   color::Fg(color::Black)).unwrap();
+        }
         write!(&mut buf, "{}", st).unwrap();
+        if !correct {
+            write!(&mut buf, "{}{}",
+                   color::Bg(color::Reset),
+                   color::Fg(color::Reset)).unwrap();
+        }
     }
     String::from_utf8(buf).unwrap()
 }
