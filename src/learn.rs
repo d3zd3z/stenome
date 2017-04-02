@@ -49,22 +49,21 @@ impl Learn {
 
             let status = self.single(&mut word);
 
-            // Update the stastics, but only of words that have some chance to be learned.  The
-            // interval reaching an hour seems like a good guess for this.
-            if word.interval > 60.0 * 60.0 {
-                match status {
-                    Status::Stopped => break,
-                    Status::Continue(true) => {
-                        self.ratio = self.ratio * 0.97 + 0.03;
-                    }
-                    Status::Continue(false) => {
-                        self.ratio = self.ratio * 0.97;
-                    }
-                }
-            }
-
             // Return the word.
             self.words.push_word(word);
+
+            match status {
+                Status::Stopped => break,
+                Status::Continue(true) => {
+                    self.ratio = self.ratio * 0.97 + 0.03;
+                }
+                Status::Continue(false) => {
+                    self.ratio = self.ratio * 0.97;
+                }
+            }
+            if status == Status::Stopped {
+                break;
+            }
         }
     }
 
