@@ -13,7 +13,7 @@ use std::error;
 use std::result;
 
 pub use stroke::Stroke;
-pub use words::Words;
+pub use words::{Counts, LearnWord, Words};
 use learn::Learn;
 use term::Term;
 
