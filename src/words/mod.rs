@@ -198,7 +198,7 @@ fn now() -> f64 {
 type Dict = BTreeMap<Vec<Stroke>, String>;
 
 fn get_dict() -> Dict {
-    let json = include_str!("dict-canonical.json");
+    let json = include_str!("../../etc/dict-canonical.json");
     let main: BTreeMap<String, String> = serde_json::from_str(json).unwrap();
     let mut result = BTreeMap::new();
     for (k, v) in main {
@@ -222,7 +222,7 @@ pub struct Lesson {
 }
 
 fn get_lessons() -> Vec<Lesson> {
-    let json = include_str!("lessons.json");
+    let json = include_str!("../../etc/lessons.json");
     let mut dict: Vec<(Vec<Stroke>, String)> = get_dict().into_iter().collect();
     let infos: Vec<LessonInfo> = serde_json::from_str(json).unwrap();
 
