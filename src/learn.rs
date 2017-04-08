@@ -54,15 +54,19 @@ impl Learn {
                  counts.active, counts.later, counts.unlearned,
                  humanize_time(word.interval)).unwrap();
         let mut active = 0;
+        let mut learned = 0;
         for b in &counts.buckets {
             writeln!(self.term, "  {:-4}: {:4} {}\r", b.name, b.count,
                      stars(65, b.count, counts.active + counts.later)).unwrap();
             // TODO: This shouldn't be done by string matching, it is fragile.
-            if b.name != "day" && b.name != "mon" {
+            if b.name == "day" || b.name == "mon" {
+                learned += b.count;
+            } else {
                 active += b.count;
             }
         }
-        writeln!(self.term, "  active: {}\r\n\r", active).unwrap();
+        writeln!(self.term, "  active : {}\r", active).unwrap();
+        writeln!(self.term, "  learned: {}\r\n\r", learned).unwrap();
         self.term.flush().unwrap();
 
         let mut state = Single::new(&mut self.term, word);
