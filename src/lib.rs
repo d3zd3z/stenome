@@ -1,6 +1,7 @@
 // Learn Steno using SRA.
 
 extern crate rand;
+extern crate rusqlite;
 extern crate serde;
 #[macro_use] extern crate serde_derive;
 extern crate serde_json;
@@ -13,7 +14,7 @@ use std::error;
 use std::result;
 
 pub use stroke::Stroke;
-pub use words::{Counts, LearnWord, Words};
+pub use words::{Counts, LearnWord, Words, Store};
 use learn::Learn;
 use term::Term;
 

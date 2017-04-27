@@ -3,6 +3,7 @@
 use ::Result;
 use serde::{de, ser};
 use std::fmt;
+use std::io::Write;
 use std::result;
 
 /// A Stroke is represented as a 32-bit unsigned integer, with a bit set for each key pressed.
@@ -121,6 +122,24 @@ impl fmt::Display for Stroke {
         }
 
         Ok(())
+    }
+}
+
+impl Stroke {
+    /// A utility for showing an array of strokes separated by slashes.
+    pub fn slashed_str(strokes: &[Stroke]) -> String {
+        let mut result = vec![];
+
+        let mut first = true;
+        for st in strokes {
+            if !first {
+                write!(&mut result, "/").unwrap();
+            }
+            first = false;
+            write!(&mut result, "{}", st).unwrap();
+        }
+
+        String::from_utf8(result).unwrap()
     }
 }
 
