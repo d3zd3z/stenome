@@ -13,37 +13,42 @@ use std::io::Write;
 fn learning() {
     let tmp_dir = TempDir::new("learn").unwrap();
     let db_path = tmp_dir.path().join("learn.db");
-    let mut st = Store::create(db_path).unwrap();
 
-    populate(&mut st).unwrap();
+    {
+        let mut st = Store::create(&db_path).unwrap();
 
-    // Ask all of the problems that we can.
-    let mut num = 1;
-    loop {
-        let prob = match st.get_next().unwrap() {
-            None => break,
-            Some(p) => p,
-        };
+        populate(&mut st).unwrap();
 
-        println!("Ask {} ({})", prob.question, num);
-        st.update(prob, num).unwrap();
-        num = num % 4 + 1;
+        // Ask all of the problems that we can.
+        let mut num = 1;
+        loop {
+            let prob = match st.get_next().unwrap() {
+                None => break,
+                Some(p) => p,
+            };
+
+            println!("Ask {} ({})", prob.question, num);
+            st.update(prob, num).unwrap();
+            num = num % 4 + 1;
+        }
+
+        // Then ask all of the new problems.
+        loop {
+            let prob = match st.get_new().unwrap() {
+                None => break,
+                Some(p) => p,
+            };
+
+            println!("New {} ({})", prob.question, num);
+            st.update(prob, num).unwrap();
+            num = num % 4 + 1;
+        }
+
+        // The challenge here then is figuring out if this result is meaningful.
     }
 
-    // Then ask all of the new problems.
-    loop {
-        let prob = match st.get_new().unwrap() {
-            None => break,
-            Some(p) => p,
-        };
-
-        println!("New {} ({})", prob.question, num);
-        st.update(prob, num).unwrap();
-        num = num % 4 + 1;
-    }
-
-    // The challenge here then is figuring out if this result is meaningful.
-    // TODO
+    // Close and open to make sure that works.
+    Store::open(&db_path).unwrap();
 }
 
 // Populate with test data.  Make a mix of unlearned problems, and learned ones that are ready to

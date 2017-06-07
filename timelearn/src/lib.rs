@@ -49,6 +49,33 @@ impl Store {
         })
     }
 
+    pub fn open<P: AsRef<Path>>(path: P) -> Result<Store> {
+        let conn = Connection::open(path)?;
+        {
+            let mut stmt = conn.prepare(" SELECT version FROM schema_version")?;
+            let mut rows = stmt.query_map(&[], |row| {
+                let vers: String = row.get(0);
+                vers
+            })?;
+            match rows.next() {
+                Some(text) => {
+                    let text = text?;
+                    if text != "20170408B" {
+                        panic!("schema version mismatch {}", text);
+                    }
+                }
+                None => panic!("No schema present"),
+            }
+            match rows.next() {
+                Some(_) => panic!("Multiple rows in schema_version"),
+                None => (),
+            }
+        }
+        Ok(Store {
+            conn: conn,
+        })
+    }
+
     /// Return a populator that can be used to more rapidly populate the data.  The population will
     /// be done within the context of a single sqlite3 database transaction.
     pub fn populate(&mut self) -> Result<Populator> {
