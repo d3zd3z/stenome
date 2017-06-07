@@ -3,7 +3,8 @@ extern crate stenome;
 
 use std::env;
 
-use stenome::{Result, Store, Words};
+use stenome::Result;
+use stenome::legacy::Words;
 
 // Stenome expects Plover to do the decoding of the steno keyboard.  To make this work, you should
 // either have an empty user dictionary, or add an empty dictionary to the list.  Then, remove all
@@ -23,11 +24,7 @@ fn main() {
 
 /// Create a new database, by loading data from an existing json file.
 fn create() -> Result<()> {
-    let mut st = Store::create("state.db")?;
     let words = Words::load("learning.json").unwrap();
-    st.add_words(&words)?;
-
-    st.get_next()?;
-
+    words.create_db("learning.db").unwrap();
     Ok(())
 }

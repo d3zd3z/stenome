@@ -7,6 +7,8 @@ extern crate serde;
 extern crate serde_json;
 extern crate termion;
 
+extern crate timelearn;
+
 #[cfg(test)]
 extern crate tempdir;
 
@@ -24,6 +26,7 @@ mod stroke;
 mod words;
 mod learn;
 mod term;
+pub mod legacy;
 
 pub fn run() {
     // Try loading the words from a save file, if not present, create a new set of words.
