@@ -16,29 +16,27 @@ use std::error;
 use std::result;
 
 pub use stroke::Stroke;
-pub use words::{Counts, LearnWord, Words, Store};
+// pub use words::{Counts, LearnWord, Words, Store};
+use timelearn::Store;
 use learn::Learn;
 use term::Term;
 
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
 
 mod stroke;
-mod words;
 mod learn;
 mod term;
 pub mod legacy;
 
 pub fn run() {
-    // Try loading the words from a save file, if not present, create a new set of words.
-    let words = match Words::load("learning.json") {
-        Ok(w) => w,
-        Err(_) => Words::new(),
-    };
+    let st = Store::open("words.db").unwrap();
 
     let term = Term::new().unwrap();
 
-    let mut learn = Learn::new(words, term);
+    let mut learn = Learn::new(st, term);
     learn.run();
+    /*
     let words = learn.into_words();
     words.save("learning.json").unwrap();
+    */
 }

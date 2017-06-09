@@ -2,36 +2,31 @@
 
 use term::Term;
 use stroke::Stroke;
-use words::{LearnWord, Words};
+use timelearn::{Problem, Store};
 
 use std::io::Write;
 use termion::color;
 
 pub struct Learn {
-    words: Words,
+    store: Store,
     term: Term,
 }
 
 impl Learn {
-    pub fn new(words: Words, term: Term) -> Learn {
+    pub fn new(store: Store, term: Term) -> Learn {
         Learn {
-            words: words,
+            store: store,
             term: term,
         }
-    }
-
-    // Consume the learner, returning the wordset contained in it.
-    pub fn into_words(self) -> Words {
-        self.words
     }
 
     pub fn run(&mut self) {
         loop {
             // TODO: Check for things that have expired we need to learn.
 
-            let mut word = match self.words.get_learned() {
+            let mut word = match self.store.get_next().unwrap() {
                 None => {
-                    match self.words.get_unlearned() {
+                    match self.store.get_new().unwrap() {
                         None => {
                             println!("No more words to learn\r");
                             return;
@@ -44,18 +39,16 @@ impl Learn {
 
             let status = self.single(&mut word);
 
-            // Return the word.
-            self.words.push_word(word);
-
-            if status == Status::Stopped {
-                break;
+            match status {
+                Status::Stopped => break,
+                Status::Continue(factor) => self.store.update(word, factor).unwrap(),
             }
         }
     }
 
     // Learn a single word, updating its timing information based on how well it was learned.
-    fn single(&mut self, word: &mut LearnWord) -> Status {
-        let counts = self.words.get_counts();
+    fn single(&mut self, word: &Problem) -> Status {
+        let counts = self.store.get_counts().unwrap();
 
         writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {}\r",
                  counts.active, counts.later, counts.unlearned,
@@ -118,16 +111,18 @@ fn stars(len: usize, value: usize, total: usize) -> String {
 
 struct Single<'t, 'w> {
     term: &'t mut Term,
-    word: &'w mut LearnWord,
+    word: &'w Problem,
+    strokes: Vec<Stroke>,
     user: Vec<Stroke>,
     errors: u32,
 }
 
 impl<'t, 'w> Single<'t, 'w> {
-    fn new<'tt, 'ww>(term: &'tt mut Term, word: &'ww mut LearnWord) -> Single<'tt, 'ww> {
+    fn new<'tt, 'ww>(term: &'tt mut Term, word: &'ww Problem) -> Single<'tt, 'ww> {
         Single {
             term: term,
             word: word,
+            strokes: Stroke::parse_strokes(&word.answer).unwrap(),
             user: vec![],
             errors: 0,
         }
@@ -135,22 +130,23 @@ impl<'t, 'w> Single<'t, 'w> {
 
     fn prompt(&mut self) {
         write!(self.term, "\r\x1b[J{:20}: {}{}",
-               self.word.english,
-               if self.word.strokes == self.user {
+               self.word.question,
+               if self.strokes == self.user {
                    if self.errors == 0 { '✓' } else { '✗' }
                } else { ' ' },
-               slashed(&self.user, &self.word.strokes)).unwrap();
+               slashed(&self.user, &self.strokes)).unwrap();
         if self.errors > 0 {
-            write!(self.term, "  ({})", slashed(&self.word.strokes, &self.word.strokes)).unwrap();
+            write!(self.term, "  ({})", slashed(&self.strokes, &self.strokes)).unwrap();
         }
         self.term.flush().unwrap();
     }
 
     fn run(&mut self) -> Status {
-        let mut result = Status::Continue;
+        let result;
         loop {
             self.prompt();
-            if self.word.strokes == self.user {
+            if self.strokes == self.user {
+                result = Status::Continue(if self.errors > 0 { 1 } else { 4 });
                 break;
             }
 
@@ -163,24 +159,19 @@ impl<'t, 'w> Single<'t, 'w> {
             } else {
                 self.user.push(stroke);
                 let pos = self.user.len();
-                if pos > self.word.strokes.len() ||
-                    self.user[pos-1] != self.word.strokes[pos-1]
+                if pos > self.strokes.len() ||
+                    self.user[pos-1] != self.strokes[pos-1]
                 {
                     self.errors += 1;
                 }
             }
         }
 
-        if result == Status::Continue {
-            if self.errors > 0 {
-                self.word.incorrect();
-            } else {
-                self.word.correct();
+        match result {
+            Status::Continue(_) => {
+                writeln!(self.term, "\r\nNew interval {}\r", humanize_time(self.word.interval)).unwrap();
             }
-
-            writeln!(self.term, "\r\nNew interval {}\r", humanize_time(self.word.interval)).unwrap();
-        } else {
-            writeln!(self.term, "\r").unwrap();
+            Status::Stopped => writeln!(self.term, "\r").unwrap(),
         }
         self.term.flush().unwrap();
         result
@@ -216,6 +207,6 @@ fn slashed(strokes: &[Stroke], expected: &[Stroke]) -> String {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 enum Status {
-    Continue,
+    Continue(u8),
     Stopped,
 }

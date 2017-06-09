@@ -54,14 +54,14 @@ impl Words {
         // unlearned words.
         for w in &self.learning {
             let strokes = Stroke::slashed_str(&w.strokes);
-            pop.add_learning_problem(&strokes, &w.english, w.next, w.interval)?;
+            pop.add_learning_problem(&w.english, &strokes, w.next, w.interval)?;
         }
 
         // Then add all of the unlearned words.
         for les in &self.unlearned {
             for w in &les.words {
                 let strokes = Stroke::slashed_str(&w.0);
-                pop.add_problem(&strokes, &w.1)?;
+                pop.add_problem(&w.1, &strokes)?;
             }
         }
 

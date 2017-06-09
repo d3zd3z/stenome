@@ -160,6 +160,29 @@ impl Store {
 
         Ok(())
     }
+
+    /// Retrieve statistics about the words available.
+    pub fn get_counts(&self) -> Result<Counts> {
+        Ok(Counts {
+            active: 0,
+            later: 0,
+            unlearned: 0,
+            buckets: vec![],
+        })
+    }
+}
+
+pub struct Counts {
+    pub active: usize,
+    pub later: usize,
+    pub unlearned: usize,
+
+    pub buckets: Vec<Bucket>,
+}
+
+pub struct Bucket {
+    pub name: &'static str,
+    pub count: usize,
 }
 
 /// A single problem retrieved.
@@ -167,8 +190,8 @@ pub struct Problem {
     id: i64,
     pub question: String,
     pub answer: String,
-    next: f64,
-    interval: f64,
+    pub next: f64, // TODO: Make these private, and provide a query.
+    pub interval: f64,
 }
 
 pub struct Populator<'a> {

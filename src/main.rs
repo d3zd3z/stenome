@@ -16,6 +16,8 @@ fn main() {
     let args: Vec<_> = env::args().skip(1).collect();
     if args == &["create"] {
         create().unwrap();
+    } else if args == &["run"] {
+        stenome::run();
     } else {
         println!("Usage: {{create|run}}");
     }
@@ -25,6 +27,6 @@ fn main() {
 /// Create a new database, by loading data from an existing json file.
 fn create() -> Result<()> {
     let words = Words::load("learning.json").unwrap();
-    words.create_db("learning.db").unwrap();
+    words.create_db("words.db").unwrap();
     Ok(())
 }
