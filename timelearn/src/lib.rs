@@ -163,11 +163,42 @@ impl Store {
 
     /// Retrieve statistics about the words available.
     pub fn get_counts(&self) -> Result<Counts> {
+        let unlearned: i64 = self.conn.query_row("
+                SELECT COUNT(*)
+                FROM probs
+                WHERE id NOT IN (SELECT probid FROM learning)", &[],
+            |row| { row.get(0) })?;
+
+        let cur = now();
+
+        let active: i64 = self.conn.query_row("
+                SELECT COUNT(*)
+                FROM probs JOIN learning
+                WHERE probs.id = learning.probid
+                    AND next <= ?", &[&cur], |row| { row.get(0) })?;
+
+        let mut interval = 1.0;
+        let mut prior = 0.0;
+        let buckets: Vec<_> = COUNT_BUCKETS.iter().map(|buk| {
+            interval *= buk.limit;
+            let count: i64 = self.conn.query_row("
+                    SELECT COUNT(*)
+                    FROM probs JOIN learning
+                    WHERE probs.id = learning.probid
+                        AND interval <= ? AND interval > ?",
+                &[&interval, &prior], |row| { row.get(0) }).unwrap();
+            prior = interval;
+            Bucket {
+                name: buk.name,
+                count: count as usize,
+            }
+        }).collect();
+
         Ok(Counts {
-            active: 0,
-            later: 0,
-            unlearned: 0,
-            buckets: vec![],
+            active: active as usize,
+            later: (unlearned - active) as usize,
+            unlearned: unlearned as usize,
+            buckets: buckets,
         })
     }
 }
@@ -184,6 +215,19 @@ pub struct Bucket {
     pub name: &'static str,
     pub count: usize,
 }
+
+struct BucketBin {
+    name: &'static str,
+    limit: f64,
+}
+
+static COUNT_BUCKETS: &'static [BucketBin] = &[
+    BucketBin{ name: "sec", limit: 60.0 },
+    BucketBin{ name: "min", limit: 60.0 },
+    BucketBin{ name: "hr", limit: 24.0 },
+    BucketBin{ name: "day", limit: 30.0 },
+    BucketBin{ name: "mon", limit: 1.0e30 },
+];
 
 /// A single problem retrieved.
 pub struct Problem {
