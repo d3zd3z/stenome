@@ -177,6 +177,12 @@ impl Store {
                 WHERE probs.id = learning.probid
                     AND next <= ?", &[&cur], |row| { row.get(0) })?;
 
+        let later: i64 = self.conn.query_row("
+                SELECT COUNT(*)
+                FROM probs JOIN learning
+                WHERE probs.id = learning.probid
+                    and next > ?", &[&cur], |row| { row.get(0) })?;
+
         let mut interval = 1.0;
         let mut prior = 0.0;
         let buckets: Vec<_> = COUNT_BUCKETS.iter().map(|buk| {
@@ -196,7 +202,7 @@ impl Store {
 
         Ok(Counts {
             active: active as usize,
-            later: (unlearned - active) as usize,
+            later: later as usize,
             unlearned: unlearned as usize,
             buckets: buckets,
         })
