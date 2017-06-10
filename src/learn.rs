@@ -30,7 +30,7 @@ impl Learn {
                         None => {
                             println!("No more words to learn\r");
                             return;
-                        },
+                        }
                         Some(word) => word,
                     }
                 }
@@ -50,14 +50,22 @@ impl Learn {
     fn single(&mut self, word: &Problem) -> Status {
         let counts = self.store.get_counts().unwrap();
 
-        writeln!(self.term, "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {}\r",
-                 counts.active, counts.later, counts.unlearned,
-                 humanize_time(word.interval)).unwrap();
+        writeln!(self.term,
+                 "\r\nActive: {}, Later: {}, Unlearned: {}, Interval {}\r",
+                 counts.active,
+                 counts.later,
+                 counts.unlearned,
+                 humanize_time(word.interval))
+                .unwrap();
         let mut active = 0;
         let mut learned = 0;
         for b in &counts.buckets {
-            writeln!(self.term, "  {:-4}: {:4} {}\r", b.name, b.count,
-                     stars(65, b.count, counts.active + counts.later)).unwrap();
+            writeln!(self.term,
+                     "  {:-4}: {:4} {}\r",
+                     b.name,
+                     b.count,
+                     stars(65, b.count, counts.active + counts.later))
+                    .unwrap();
             // TODO: This shouldn't be done by string matching, it is fragile.
             if b.name == "day" || b.name == "mon" {
                 learned += b.count;
@@ -92,14 +100,30 @@ struct UnitEntry {
     div: f64,
 }
 
-static UNITS: &'static [UnitEntry] = &[
-    UnitEntry{ name: "seconds", div: 60.0 },
-    UnitEntry{ name: "minutes", div: 60.0 },
-    UnitEntry{ name: "hours", div: 24.0 },
-    UnitEntry{ name: "days", div: 365.0 },
-    UnitEntry{ name: "months", div: 12.0 },
-    UnitEntry{ name: "years", div: 1.0e6 },
-];
+static UNITS: &'static [UnitEntry] = &[UnitEntry {
+     name: "seconds",
+     div: 60.0,
+ },
+ UnitEntry {
+     name: "minutes",
+     div: 60.0,
+ },
+ UnitEntry {
+     name: "hours",
+     div: 24.0,
+ },
+ UnitEntry {
+     name: "days",
+     div: 365.0,
+ },
+ UnitEntry {
+     name: "months",
+     div: 12.0,
+ },
+ UnitEntry {
+     name: "years",
+     div: 1.0e6,
+ }];
 
 // Print a line of stars resembling a histogram bar.  `len` is the number of stars to use, a is the
 // number in question, and total is the expected total.
@@ -107,7 +131,7 @@ fn stars(len: usize, value: usize, total: usize) -> String {
     let mut buf = String::new();
     buf.push('|');
     let thresh = value as f64 / total as f64 * len as f64;
-    for i in 0 .. len {
+    for i in 0..len {
         if (i as f64) < thresh {
             buf.push('*');
         } else {
@@ -138,12 +162,16 @@ impl<'t, 'w> Single<'t, 'w> {
     }
 
     fn prompt(&mut self) {
-        write!(self.term, "\r\x1b[J{:20}: {}{}",
+        write!(self.term,
+               "\r\x1b[J{:20}: {}{}",
                self.word.question,
                if self.strokes == self.user {
                    if self.errors == 0 { '✓' } else { '✗' }
-               } else { ' ' },
-               slashed(&self.user, &self.strokes)).unwrap();
+               } else {
+                   ' '
+               },
+               slashed(&self.user, &self.strokes))
+                .unwrap();
         if self.errors > 0 {
             write!(self.term, "  ({})", slashed(&self.strokes, &self.strokes)).unwrap();
         }
@@ -160,7 +188,10 @@ impl<'t, 'w> Single<'t, 'w> {
             }
 
             let stroke = match self.term.read_stroke().unwrap() {
-                None => { result = Status::Stopped; break; }
+                None => {
+                    result = Status::Stopped;
+                    break;
+                }
                 Some(st) => st,
             };
             if stroke.is_star() {
@@ -168,9 +199,7 @@ impl<'t, 'w> Single<'t, 'w> {
             } else {
                 self.user.push(stroke);
                 let pos = self.user.len();
-                if pos > self.strokes.len() ||
-                    self.user[pos-1] != self.strokes[pos-1]
-                {
+                if pos > self.strokes.len() || self.user[pos - 1] != self.strokes[pos - 1] {
                     self.errors += 1;
                 }
             }
@@ -178,7 +207,10 @@ impl<'t, 'w> Single<'t, 'w> {
 
         match result {
             Status::Continue(_) => {
-                writeln!(self.term, "\r\nNew interval {}\r", humanize_time(self.word.interval)).unwrap();
+                writeln!(self.term,
+                         "\r\nNew interval {}\r",
+                         humanize_time(self.word.interval))
+                        .unwrap();
             }
             Status::Stopped => writeln!(self.term, "\r").unwrap(),
         }
@@ -200,15 +232,19 @@ fn slashed(strokes: &[Stroke], expected: &[Stroke]) -> String {
 
         let correct = expected.get(i) == Some(st);
         if !correct {
-            write!(&mut buf, "{}{}",
+            write!(&mut buf,
+                   "{}{}",
                    color::Bg(color::LightRed),
-                   color::Fg(color::Black)).unwrap();
+                   color::Fg(color::Black))
+                    .unwrap();
         }
         write!(&mut buf, "{}", st).unwrap();
         if !correct {
-            write!(&mut buf, "{}{}",
+            write!(&mut buf,
+                   "{}{}",
                    color::Bg(color::Reset),
-                   color::Fg(color::Reset)).unwrap();
+                   color::Fg(color::Reset))
+                    .unwrap();
         }
     }
     String::from_utf8(buf).unwrap()

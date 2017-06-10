@@ -19,10 +19,10 @@ pub struct Term {
 impl Term {
     pub fn new() -> Result<Term> {
         Ok(Term {
-            keys: stdin().keys(),
-            stdout: stdout().into_raw_mode()?,
-            counts: vec![],
-        })
+               keys: stdin().keys(),
+               stdout: stdout().into_raw_mode()?,
+               counts: vec![],
+           })
     }
 
     /// Attempt to read a stroke from the terminal, or returns None if there are no strokes
@@ -46,7 +46,7 @@ impl Term {
                                     self.counts.remove(1);
                                 }
                                 chars.clear();
-                                return Ok(Some(st))
+                                return Ok(Some(st));
                             }
                             Err(e) => {
                                 writeln!(self, "Invalid stroke received: {:?}\r", e)?;

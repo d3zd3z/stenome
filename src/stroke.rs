@@ -1,6 +1,6 @@
 //! A Steno Stroke represents a set of keys that are pressed together on the keyboard.
 
-use ::Result;
+use Result;
 use serde::{de, ser};
 use std::fmt;
 use std::io::Write;
@@ -58,7 +58,9 @@ impl Stroke {
                             break;
                         }
                     }
-                    None => return Err(format!("Invalid char in text: {:?} ({:?})", text, ch).into()),
+                    None => {
+                        return Err(format!("Invalid char in text: {:?} ({:?})", text, ch).into())
+                    }
                 }
             }
         }
@@ -198,7 +200,7 @@ mod test {
     #[test]
     #[ignore]
     fn full_steno() {
-        for i in 1 .. NUM {
+        for i in 1..NUM {
             let a = Stroke(i);
             let text_a = format!("{}", a);
             // println!("Parsing: text_a: {:?}", text_a);
