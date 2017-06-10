@@ -32,10 +32,12 @@ impl Store {
             let tx = conn.transaction()?;
             tx.execute("CREATE TABLE probs (id INTEGER PRIMARY KEY,
                 question TEXT UNIQUE,
-                answer TEXT NOT NULL)", &[])?;
+                answer TEXT NOT NULL)",
+                         &[])?;
             tx.execute("CREATE TABLE learning (probid INTEGER PRIMARY KEY REFERENCES probs (id),
                 next REAL NOT NULL,
-                interval REAL NOT NULL)", &[])?;
+                interval REAL NOT NULL)",
+                         &[])?;
             tx.execute("CREATE INDEX learning_next ON learning (next)", &[])?;
             tx.execute("CREATE TABLE schema_version (version TEXT NOT NULL)", &[])?;
             tx.execute("INSERT INTO schema_version VALUES (?)", &[&"20170408B"])?;
@@ -44,9 +46,7 @@ impl Store {
 
         conn.execute("PRAGMA foreign_keys = ON", &[])?;
 
-        Ok(Store {
-            conn: conn,
-        })
+        Ok(Store { conn: conn })
     }
 
     pub fn open<P: AsRef<Path>>(path: P) -> Result<Store> {
@@ -54,9 +54,9 @@ impl Store {
         {
             let mut stmt = conn.prepare(" SELECT version FROM schema_version")?;
             let mut rows = stmt.query_map(&[], |row| {
-                let vers: String = row.get(0);
-                vers
-            })?;
+                    let vers: String = row.get(0);
+                    vers
+                })?;
             match rows.next() {
                 Some(text) => {
                     let text = text?;
@@ -71,24 +71,21 @@ impl Store {
                 None => (),
             }
         }
-        Ok(Store {
-            conn: conn,
-        })
+        Ok(Store { conn: conn })
     }
 
     /// Return a populator that can be used to more rapidly populate the data.  The population will
     /// be done within the context of a single sqlite3 database transaction.
     pub fn populate(&mut self) -> Result<Populator> {
         let tx = self.conn.transaction()?;
-        Ok(Populator {
-            tx: tx,
-        })
+        Ok(Populator { tx: tx })
     }
 
     /// Query for the next problem that has expired.  If Some, then this is the next problem that
     /// should be asked.
     pub fn get_next(&mut self) -> Result<Option<Problem>> {
-        let mut stmt = self.conn.prepare("
+        let mut stmt = self.conn
+            .prepare("
             SELECT id, question, answer, next, interval
             FROM probs JOIN learning
             WHERE probs.id = learning.probid
@@ -96,14 +93,14 @@ impl Store {
             ORDER BY next
             LIMIT 1")?;
         let mut rows = stmt.query_map(&[&now()], |row| {
-            Problem {
-                id: row.get(0),
-                question: row.get(1),
-                answer: row.get(2),
-                next: row.get(3),
-                interval: row.get(4),
-            }
-        })?;
+                Problem {
+                    id: row.get(0),
+                    question: row.get(1),
+                    answer: row.get(2),
+                    next: row.get(3),
+                    interval: row.get(4),
+                }
+            })?;
         match rows.next() {
             Some(row) => Ok(Some(row?)),
             None => Ok(None),
@@ -113,21 +110,22 @@ impl Store {
     /// Get a problem that hasn't started being learned.  The interval and "next" will be set
     /// appropriately for a new word.
     pub fn get_new(&mut self) -> Result<Option<Problem>> {
-        let mut stmt = self.conn.prepare("
+        let mut stmt = self.conn
+            .prepare("
             SELECT id, question, answer
             FROM probs
             WHERE ID NOT IN (SELECT probid FROM learning)
             ORDER BY id
             LIMIT 1")?;
         let mut rows = stmt.query_map(&[], |row| {
-            Problem {
-                id: row.get(0),
-                question: row.get(1),
-                answer: row.get(2),
-                next: now(),
-                interval: 5.0,
-            }
-        })?;
+                Problem {
+                    id: row.get(0),
+                    question: row.get(1),
+                    answer: row.get(2),
+                    next: now(),
+                    interval: 5.0,
+                }
+            })?;
         match rows.next() {
             Some(row) => Ok(Some(row?)),
             None => Ok(None),
@@ -155,7 +153,7 @@ impl Store {
 
         let tx = self.conn.transaction()?;
         tx.execute("INSERT OR REPLACE INTO learning VALUES (?, ?, ?)",
-            &[&prob.id, &prob.next, &prob.interval])?;
+                     &[&prob.id, &prob.next, &prob.interval])?;
         tx.commit()?;
 
         Ok(())
@@ -163,49 +161,63 @@ impl Store {
 
     /// Retrieve statistics about the words available.
     pub fn get_counts(&self) -> Result<Counts> {
-        let unlearned: i64 = self.conn.query_row("
+        let unlearned: i64 = self.conn
+            .query_row("
                 SELECT COUNT(*)
                 FROM probs
-                WHERE id NOT IN (SELECT probid FROM learning)", &[],
-            |row| { row.get(0) })?;
+                WHERE id NOT IN (SELECT probid FROM learning)",
+                       &[],
+                       |row| row.get(0))?;
 
         let cur = now();
 
-        let active: i64 = self.conn.query_row("
+        let active: i64 = self.conn
+            .query_row("
                 SELECT COUNT(*)
                 FROM probs JOIN learning
                 WHERE probs.id = learning.probid
-                    AND next <= ?", &[&cur], |row| { row.get(0) })?;
+                    AND next <= ?",
+                       &[&cur],
+                       |row| row.get(0))?;
 
-        let later: i64 = self.conn.query_row("
+        let later: i64 = self.conn
+            .query_row("
                 SELECT COUNT(*)
                 FROM probs JOIN learning
                 WHERE probs.id = learning.probid
-                    and next > ?", &[&cur], |row| { row.get(0) })?;
+                    and next > ?",
+                       &[&cur],
+                       |row| row.get(0))?;
 
         let mut interval = 1.0;
         let mut prior = 0.0;
-        let buckets: Vec<_> = COUNT_BUCKETS.iter().map(|buk| {
-            interval *= buk.limit;
-            let count: i64 = self.conn.query_row("
+        let buckets: Vec<_> = COUNT_BUCKETS
+            .iter()
+            .map(|buk| {
+                interval *= buk.limit;
+                let count: i64 = self.conn
+                    .query_row("
                     SELECT COUNT(*)
                     FROM probs JOIN learning
                     WHERE probs.id = learning.probid
                         AND interval <= ? AND interval > ?",
-                &[&interval, &prior], |row| { row.get(0) }).unwrap();
-            prior = interval;
-            Bucket {
-                name: buk.name,
-                count: count as usize,
-            }
-        }).collect();
+                               &[&interval, &prior],
+                               |row| row.get(0))
+                    .unwrap();
+                prior = interval;
+                Bucket {
+                    name: buk.name,
+                    count: count as usize,
+                }
+            })
+            .collect();
 
         Ok(Counts {
-            active: active as usize,
-            later: later as usize,
-            unlearned: unlearned as usize,
-            buckets: buckets,
-        })
+               active: active as usize,
+               later: later as usize,
+               unlearned: unlearned as usize,
+               buckets: buckets,
+           })
     }
 }
 
@@ -227,13 +239,26 @@ struct BucketBin {
     limit: f64,
 }
 
-static COUNT_BUCKETS: &'static [BucketBin] = &[
-    BucketBin{ name: "sec", limit: 60.0 },
-    BucketBin{ name: "min", limit: 60.0 },
-    BucketBin{ name: "hr", limit: 24.0 },
-    BucketBin{ name: "day", limit: 30.0 },
-    BucketBin{ name: "mon", limit: 1.0e30 },
-];
+static COUNT_BUCKETS: &'static [BucketBin] = &[BucketBin {
+     name: "sec",
+     limit: 60.0,
+ },
+ BucketBin {
+     name: "min",
+     limit: 60.0,
+ },
+ BucketBin {
+     name: "hr",
+     limit: 24.0,
+ },
+ BucketBin {
+     name: "day",
+     limit: 30.0,
+ },
+ BucketBin {
+     name: "mon",
+     limit: 1.0e30,
+ }];
 
 /// A single problem retrieved.
 pub struct Problem {
@@ -251,18 +276,26 @@ pub struct Populator<'a> {
 impl<'a> Populator<'a> {
     /// Add a single unlearned problem to the store.
     pub fn add_problem(&mut self, question: &str, answer: &str) -> Result<()> {
-        self.tx.execute("INSERT INTO probs (question, answer) VALUES (?, ?)",
-            &[&question, &answer])?;
+        self.tx
+            .execute("INSERT INTO probs (question, answer) VALUES (?, ?)",
+                     &[&question, &answer])?;
         Ok(())
     }
 
     /// Add a problem that is in the process of being learned.  The 'next' value is the unix time
     /// that the question should be asked again, and 'interval' is the current interval.
-    pub fn add_learning_problem(&mut self, question: &str, answer: &str, next: f64, interval: f64) -> Result<()> {
-        self.tx.execute("INSERT INTO probs (question, answer) VALUES (?, ?)",
-            &[&question, &answer])?;
-        self.tx.execute("INSERT INTO learning VALUES (?, ?, ?)",
-            &[&self.tx.last_insert_rowid(), &next, &interval])?;
+    pub fn add_learning_problem(&mut self,
+                                question: &str,
+                                answer: &str,
+                                next: f64,
+                                interval: f64)
+                                -> Result<()> {
+        self.tx
+            .execute("INSERT INTO probs (question, answer) VALUES (?, ?)",
+                     &[&question, &answer])?;
+        self.tx
+            .execute("INSERT INTO learning VALUES (?, ?, ?)",
+                     &[&self.tx.last_insert_rowid(), &next, &interval])?;
         Ok(())
     }
 

@@ -58,17 +58,17 @@ fn populate(st: &mut Store) -> Result<()> {
     let cur = now();
 
     // These are in the past, ready to ask.
-    for i in 1 .. 11 {
+    for i in 1..11 {
         add_one(&mut p, i, Some((cur - 20.0, 5.0)))?;
     }
 
     // These are in the future.
-    for i in 11 .. 21 {
+    for i in 11..21 {
         add_one(&mut p, i, Some((cur + 20.0, 5.0)))?;
     }
 
     // And these haven't been asked at all.
-    for i in 21 .. 31 {
+    for i in 21..31 {
         add_one(&mut p, i, None)?;
     }
 
@@ -82,13 +82,13 @@ fn add_one<'a>(pop: &mut Populator<'a>, num: i32, ni: Option<(f64, f64)>) -> Res
 
     let mut qn = vec![];
     write!(&mut qn, "qn{}:", num).unwrap();
-    for _ in 1 .. rng.gen_range(5, 40) {
+    for _ in 1..rng.gen_range(5, 40) {
         qn.push(rng.gen_range(b'a', b'z'));
     }
 
     let mut an = vec![];
     write!(&mut an, "an{}:", num).unwrap();
-    for _ in 1 .. rng.gen_range(5, 40) {
+    for _ in 1..rng.gen_range(5, 40) {
         an.push(rng.gen_range(b'a', b'z'));
     }
 
