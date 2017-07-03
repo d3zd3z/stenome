@@ -292,11 +292,21 @@ pub struct Problem {
     pub question: String,
     /// Likewise, the correct answer to the question.
     pub answer: String,
-    /// A Unix timestemp of when we are next going to ask this question.
-    pub next: f64, // TODO: Make these private, and provide a query.
-    /// The time interval, in seconds, between asks.  This will be adjusted by `update` each time a
-    /// question is answered.
-    pub interval: f64,
+    next: f64, // TODO: Make these private, and provide a query.
+    interval: f64,
+}
+
+impl Problem {
+    /// Get the Posix timestamp for when we will next ask this Problem.
+    pub fn get_next(&self) -> f64 {
+        self.next
+    }
+
+    /// Get the time interval, in seconds, between asks.  This will be adjusted by `update` each
+    /// time a question is answered.
+    pub fn get_interval(&self) -> f64 {
+        self.interval
+    }
 }
 
 /// A helper to populate a `Store` with `Problem`s.

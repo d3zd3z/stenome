@@ -55,7 +55,7 @@ impl Learn {
                  counts.active,
                  counts.later,
                  counts.unlearned,
-                 humanize_time(word.interval))
+                 humanize_time(word.get_interval()))
                 .unwrap();
         let mut active = 0;
         let mut learned = 0;
@@ -209,7 +209,7 @@ impl<'t, 'w> Single<'t, 'w> {
             Status::Continue(_) => {
                 writeln!(self.term,
                          "\r\nNew interval {}\r",
-                         humanize_time(self.word.interval))
+                         humanize_time(self.word.get_interval()))
                         .unwrap();
             }
             Status::Stopped => writeln!(self.term, "\r").unwrap(),
