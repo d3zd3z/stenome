@@ -283,8 +283,7 @@ static COUNT_BUCKETS: &'static [BucketBin] = &[BucketBin {
      limit: 1.0e30,
  }];
 
-/// A single problem retrieved.  `next` and `interval` are currently public, but should not be
-/// modified by outside code.  Updates only happen when the `update` method is called on the store.
+/// A single problem retrieved.
 pub struct Problem {
     id: i64,
     /// The text of the question.  Can be an arbitrary string, encoded in a way that is meaningful
