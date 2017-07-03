@@ -1,7 +1,19 @@
-/// srs: A model for spaced repetition system learning.
-///
-/// This crate maintains a database of problems, and some notions of intervals and a bit of history
-/// in order to allow them to be used for spaced repetition learning.
+//! A model for spaced repetition system learning.
+//!
+//! This crate maintains a database of problems, and some notions of intervals and a bit of history
+//! in order to allow them to be used for spaced repetition learning.
+//!
+//! The key type is the `Store` which is associated with a single database file.
+//!
+//! A given `Problem` is simply two text strings, a question and an answer.  It is up to the user
+//! of this crate to determine what these mean.  It could be as simple as text to display to the
+//! user, or some encoded data to determine the correct answer.
+//!
+//! The client of this library should be able to ask questions, determine if the answer is correct,
+//! and return a 1-4 rating of how well the user answered the question.  In some cases, it may only
+//! make sense to return either a 1 for an incorrect answer, or a 4 for a correct answer.
+
+#![deny(missing_docs)]
 
 extern crate rand;
 extern crate rusqlite;
@@ -13,7 +25,8 @@ use std::path::Path;
 use std::result;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-// For now, just box the errors.  TODO: Make a real error type.
+/// A wrapper around the result type for all results returned.  Currently, the errors are just
+/// boxed, and this should be improved.
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
 
 /// A Store holds problems in a database (and holds the handle to the database).
@@ -49,6 +62,7 @@ impl Store {
         Ok(Store { conn: conn })
     }
 
+    /// Open an existing (and ideally already populated) `Store`.
     pub fn open<P: AsRef<Path>>(path: P) -> Result<Store> {
         let conn = Connection::open(path)?;
         {
@@ -221,16 +235,25 @@ impl Store {
     }
 }
 
+/// Statistics about the current state of the problems.
 pub struct Counts {
+    /// The number of "Active" problems.  Something is considered active if it is due for learning.
     pub active: usize,
+    /// The number of problems that are being learned, but aren't ready to be asked again.
     pub later: usize,
+    /// The number of problems the user has never been shown.
     pub unlearned: usize,
 
+    /// Counts of all of the problems, grouped into histogram buckets based on the learning
+    /// interval of the problem.  The bucket names are a short description of the interval.
     pub buckets: Vec<Bucket>,
 }
 
+/// A single histogram bucket describing a number of problems of a given category.
 pub struct Bucket {
+    /// A short description of this bucket.
     pub name: &'static str,
+    /// The number of problems in this bucket.
     pub count: usize,
 }
 
@@ -260,15 +283,23 @@ static COUNT_BUCKETS: &'static [BucketBin] = &[BucketBin {
      limit: 1.0e30,
  }];
 
-/// A single problem retrieved.
+/// A single problem retrieved.  `next` and `interval` are currently public, but should not be
+/// modified by outside code.  Updates only happen when the `update` method is called on the store.
 pub struct Problem {
     id: i64,
+    /// The text of the question.  Can be an arbitrary string, encoded in a way that is meaningful
+    /// to the client of this crate.
     pub question: String,
+    /// Likewise, the correct answer to the question.
     pub answer: String,
+    /// A Unix timestemp of when we are next going to ask this question.
     pub next: f64, // TODO: Make these private, and provide a query.
+    /// The time interval, in seconds, between asks.  This will be adjusted by `update` each time a
+    /// question is answered.
     pub interval: f64,
 }
 
+/// A helper to populate a `Store` with `Problem`s.
 pub struct Populator<'a> {
     tx: Transaction<'a>,
 }
@@ -284,6 +315,9 @@ impl<'a> Populator<'a> {
 
     /// Add a problem that is in the process of being learned.  The 'next' value is the unix time
     /// that the question should be asked again, and 'interval' is the current interval.
+    ///
+    /// This is used when importing problems from another system, where some of the problems may
+    /// already be learned.
     pub fn add_learning_problem(&mut self,
                                 question: &str,
                                 answer: &str,
@@ -299,13 +333,17 @@ impl<'a> Populator<'a> {
         Ok(())
     }
 
+    /// Consume the `Populator` and commit.  If the Populator is dropped without calling `commit`,
+    /// any changes made by it will be rolled back.
     pub fn commit(self) -> Result<()> {
         self.tx.commit()?;
         Ok(())
     }
 }
 
-// Get the current time as ticks.
+/// Get the current time in the Posix timestamp format.  This is the same time value used by the
+/// 'next' field of the Problems, and can be used, for example, during population to set already
+/// partially-learned problems.
 pub fn now() -> f64 {
     let stamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
     let sec = stamp.as_secs();
