@@ -16,10 +16,10 @@ fn main() {
     let args: Vec<_> = env::args().skip(1).collect();
     if args == &["create"] {
         create().unwrap();
-    } else if args == &["run"] {
-        stenome::run();
+    } else if args.len() == 2 && args[0] == "run" {
+        stenome::run(&args[1]);
     } else {
-        println!("Usage: {{create|run}}");
+        println!("Usage: {{create|run db}}");
     }
     // stenome::run();
 }

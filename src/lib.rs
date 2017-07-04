@@ -23,11 +23,13 @@ use timelearn::Store;
 pub use timelearn::Problem;
 use learn::Learn;
 use steno::Steno;
+use simple::Simple;
 
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
 
 mod stroke;
 mod learn;
+mod simple;
 mod steno;
 pub mod legacy;
 
@@ -44,21 +46,20 @@ pub trait User: Write {
     fn single(&mut self, word: &Problem) -> Result<Status>;
 }
 
-pub fn run() {
-    let st = Store::open("words.db").unwrap();
+pub fn run(path: &str) {
+    let st = Store::open(path).unwrap();
 
-    if st.get_kind() != "steno" {
-        panic!("Store is not a \"steno\" store ({:?})", st.get_kind());
+    if st.get_kind() == "steno" {
+        let mut user = Steno::new().unwrap();
+        let mut learn = Learn::new(st, &mut user);
+        learn.run();
+    } else if st.get_kind() == "simple" {
+        let mut user = Simple::new().unwrap();
+        let mut learn = Learn::new(st, &mut user);
+        learn.run();
+    } else {
+        panic!("Unknown store type '{}'", st.get_kind());
     }
-
-    let mut user = Steno::new().unwrap();
-
-    let mut learn = Learn::new(st, &mut user);
-    learn.run();
-    /*
-    let words = learn.into_words();
-    words.save("learning.json").unwrap();
-    */
 }
 
 // Format an interval (in seconds) in terms of nicer units.
