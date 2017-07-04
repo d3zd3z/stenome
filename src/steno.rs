@@ -11,6 +11,7 @@ use termion::input::{Keys, TermRead};
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::color;
 use timelearn::Problem;
+use User;
 
 pub struct Steno {
     keys: Keys<Stdin>,
@@ -81,9 +82,11 @@ impl Steno {
             }
         }
     }
+}
 
+impl User for Steno {
     /// Ask the user to stroke a single problem, returning `Status` indicating how the user did.
-    pub fn single(&mut self, word: &Problem) -> Status {
+    fn single(&mut self, word: &Problem) -> Status {
         let mut state = Single::new(self, word);
         state.run()
     }

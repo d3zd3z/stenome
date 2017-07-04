@@ -1,19 +1,18 @@
 // Learning.
 
-use steno::Steno;
 use timelearn::{Problem, Store};
 use humanize_time;
 
-use std::io::Write;
 use Status;
+use User;
 
-pub struct Learn {
+pub struct Learn<'u> {
     store: Store,
-    user: Steno,
+    user: &'u mut User,
 }
 
-impl Learn {
-    pub fn new(store: Store, user: Steno) -> Learn {
+impl<'u> Learn<'u> {
+    pub fn new<'uu>(store: Store, user: &'uu mut User) -> Learn<'uu> {
         Learn {
             store: store,
             user: user,

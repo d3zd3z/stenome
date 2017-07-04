@@ -14,11 +14,13 @@ extern crate timelearn;
 extern crate tempdir;
 
 use std::error;
+use std::io::Write;
 use std::result;
 
 pub use stroke::Stroke;
 // pub use words::{Counts, LearnWord, Words, Store};
 use timelearn::Store;
+pub use timelearn::Problem;
 use learn::Learn;
 use steno::Steno;
 
@@ -35,12 +37,19 @@ pub enum Status {
     Stopped,
 }
 
+/// A User is something that can be asked to solve a single problem.  It implements `Write` which
+/// is used to prompt and present information.  The method `single` is used to ask a single
+/// question, and get status back from it.
+pub trait User: Write {
+    fn single(&mut self, word: &Problem) -> Status;
+}
+
 pub fn run() {
     let st = Store::open("words.db").unwrap();
 
-    let user = Steno::new().unwrap();
+    let mut user = Steno::new().unwrap();
 
-    let mut learn = Learn::new(st, user);
+    let mut learn = Learn::new(st, &mut user);
     learn.run();
     /*
     let words = learn.into_words();
