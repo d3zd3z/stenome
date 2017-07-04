@@ -46,7 +46,7 @@ impl Words {
 
     /// Create a database, and add all of these words into it.
     pub fn create_db<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-        let mut st = Store::create(path)?;
+        let mut st = Store::create(path, "steno")?;
         let mut pop = st.populate()?;
 
         // Start with the words being learned. The order will be based on the current intervals, so

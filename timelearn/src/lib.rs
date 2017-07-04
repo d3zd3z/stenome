@@ -33,12 +33,16 @@ pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
 pub struct Store {
     /// The connection to the database.
     conn: Connection,
+
+    /// The kind, which indicates how the problems are interpreted.
+    kind: String,
 }
 
 impl Store {
     /// Create a new store at the given path.  Will return an error if the database has already
-    /// been created.
-    pub fn create<P: AsRef<Path>>(path: P) -> Result<Store> {
+    /// been created.  The `kind` is a string that can be used later to determine what kind of user
+    /// interaction to use (and define the interpretation of the problems).
+    pub fn create<P: AsRef<Path>>(path: P, kind: &str) -> Result<Store> {
         let mut conn = Connection::open(path)?;
 
         {
@@ -51,15 +55,20 @@ impl Store {
                 next REAL NOT NULL,
                 interval REAL NOT NULL)",
                          &[])?;
+            tx.execute("CREATE TABLE config (key TEXT PRIMARY KEY, value TEXT NOT NULL)", &[])?;
+            tx.execute("INSERT INTO config VALUES ('kind', ?)", &[&kind])?;
             tx.execute("CREATE INDEX learning_next ON learning (next)", &[])?;
             tx.execute("CREATE TABLE schema_version (version TEXT NOT NULL)", &[])?;
-            tx.execute("INSERT INTO schema_version VALUES (?)", &[&"20170408B"])?;
+            tx.execute("INSERT INTO schema_version VALUES (?)", &[&"20170704A"])?;
             tx.commit()?;
         }
 
         conn.execute("PRAGMA foreign_keys = ON", &[])?;
 
-        Ok(Store { conn: conn })
+        Ok(Store {
+            conn: conn,
+            kind: kind.to_owned(),
+        })
     }
 
     /// Open an existing (and ideally already populated) `Store`.
@@ -74,7 +83,7 @@ impl Store {
             match rows.next() {
                 Some(text) => {
                     let text = text?;
-                    if text != "20170408B" {
+                    if text != "20170704A" {
                         panic!("schema version mismatch {}", text);
                     }
                 }
@@ -85,7 +94,27 @@ impl Store {
                 None => (),
             }
         }
-        Ok(Store { conn: conn })
+        let kind = {
+            let mut stmt = conn.prepare("SELECT value FROM config WHERE key = 'kind'")?;
+            let mut rows = stmt.query_map(&[], |row| {
+                let value: String = row.get(0);
+                value
+            })?;
+            match rows.next() {
+                Some(text) => text?,
+                None => panic!("No kind present"),
+            }
+        };
+        Ok(Store {
+            conn: conn,
+            kind: kind,
+        })
+    }
+
+    /// Retrieve the kind of this Store.  This is the string given when the store was created,
+    /// indicates how the problems should be interpreted.
+    pub fn get_kind(&self) -> &str {
+        &self.kind
     }
 
     /// Return a populator that can be used to more rapidly populate the data.  The population will

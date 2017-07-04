@@ -47,6 +47,10 @@ pub trait User: Write {
 pub fn run() {
     let st = Store::open("words.db").unwrap();
 
+    if st.get_kind() != "steno" {
+        panic!("Store is not a \"steno\" store ({:?})", st.get_kind());
+    }
+
     let mut user = Steno::new().unwrap();
 
     let mut learn = Learn::new(st, &mut user);
