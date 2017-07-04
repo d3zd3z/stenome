@@ -41,7 +41,7 @@ pub enum Status {
 /// is used to prompt and present information.  The method `single` is used to ask a single
 /// question, and get status back from it.
 pub trait User: Write {
-    fn single(&mut self, word: &Problem) -> Status;
+    fn single(&mut self, word: &Problem) -> Result<Status>;
 }
 
 pub fn run() {

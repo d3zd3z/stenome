@@ -86,7 +86,7 @@ impl Steno {
 
 impl User for Steno {
     /// Ask the user to stroke a single problem, returning `Status` indicating how the user did.
-    fn single(&mut self, word: &Problem) -> Status {
+    fn single(&mut self, word: &Problem) -> Result<Status> {
         let mut state = Single::new(self, word);
         state.run()
     }
@@ -122,7 +122,7 @@ impl<'t, 'w> Single<'t, 'w> {
         }
     }
 
-    fn prompt(&mut self) {
+    fn prompt(&mut self) -> Result<()> {
         write!(self.user,
                "\r\x1b[J{:20}: {}{}",
                self.word.question,
@@ -131,24 +131,24 @@ impl<'t, 'w> Single<'t, 'w> {
                } else {
                    ' '
                },
-               slashed(&self.input, &self.strokes))
-                .unwrap();
+               slashed(&self.input, &self.strokes))?;
         if self.errors > 0 {
-            write!(self.user, "  ({})", slashed(&self.strokes, &self.strokes)).unwrap();
+            write!(self.user, "  ({})", slashed(&self.strokes, &self.strokes))?;
         }
-        self.user.flush().unwrap();
+        self.user.flush()?;
+        Ok(())
     }
 
-    fn run(&mut self) -> Status {
+    fn run(&mut self) -> Result<Status> {
         let result;
         loop {
-            self.prompt();
+            self.prompt()?;
             if self.strokes == self.input {
                 result = Status::Continue(if self.errors > 0 { 1 } else { 4 });
                 break;
             }
 
-            let stroke = match self.user.read_stroke().unwrap() {
+            let stroke = match self.user.read_stroke()? {
                 None => {
                     result = Status::Stopped;
                     break;
@@ -170,13 +170,12 @@ impl<'t, 'w> Single<'t, 'w> {
             Status::Continue(_) => {
                 writeln!(self.user,
                          "\r\nNew interval {}\r",
-                         humanize_time(self.word.get_interval()))
-                        .unwrap();
+                         humanize_time(self.word.get_interval()))?;
             }
-            Status::Stopped => writeln!(self.user, "\r").unwrap(),
+            Status::Stopped => writeln!(self.user, "\r")?,
         }
-        self.user.flush().unwrap();
-        result
+        self.user.flush()?;
+        Ok(result)
     }
 }
 

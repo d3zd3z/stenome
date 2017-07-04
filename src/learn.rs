@@ -76,7 +76,7 @@ impl<'u> Learn<'u> {
         writeln!(self.user, "  learned: {}\r\n\r", learned).unwrap();
         self.user.flush().unwrap();
 
-        self.user.single(word)
+        self.user.single(word).unwrap()
     }
 }
 
