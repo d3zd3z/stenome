@@ -81,6 +81,12 @@ impl Steno {
             }
         }
     }
+
+    /// Ask the user to stroke a single problem, returning `Status` indicating how the user did.
+    pub fn single(&mut self, word: &Problem) -> Status {
+        let mut state = Single::new(self, word);
+        state.run()
+    }
 }
 
 impl Write for Steno {
@@ -94,7 +100,7 @@ impl Write for Steno {
     }
 }
 
-pub struct Single<'t, 'w> {
+struct Single<'t, 'w> {
     user: &'t mut Steno,
     word: &'w Problem,
     strokes: Vec<Stroke>,
@@ -103,7 +109,7 @@ pub struct Single<'t, 'w> {
 }
 
 impl<'t, 'w> Single<'t, 'w> {
-    pub fn new<'tt, 'ww>(user: &'tt mut Steno, word: &'ww Problem) -> Single<'tt, 'ww> {
+    fn new<'tt, 'ww>(user: &'tt mut Steno, word: &'ww Problem) -> Single<'tt, 'ww> {
         Single {
             user: user,
             word: word,
@@ -130,7 +136,7 @@ impl<'t, 'w> Single<'t, 'w> {
         self.user.flush().unwrap();
     }
 
-    pub fn run(&mut self) -> Status {
+    fn run(&mut self) -> Status {
         let result;
         loop {
             self.prompt();

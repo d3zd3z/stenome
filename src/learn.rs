@@ -1,6 +1,6 @@
 // Learning.
 
-use steno::{Single, Steno};
+use steno::Steno;
 use timelearn::{Problem, Store};
 use humanize_time;
 
@@ -77,8 +77,7 @@ impl Learn {
         writeln!(self.user, "  learned: {}\r\n\r", learned).unwrap();
         self.user.flush().unwrap();
 
-        let mut state = Single::new(&mut self.user, word);
-        state.run()
+        self.user.single(word)
     }
 }
 
