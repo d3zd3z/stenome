@@ -1,4 +1,4 @@
-// A terminal.
+//! Manage learning from a Steno device.
 
 use Result;
 use stroke::Stroke;
@@ -8,7 +8,7 @@ use termion::event::Key;
 use termion::input::{Keys, TermRead};
 use termion::raw::{IntoRawMode, RawTerminal};
 
-pub struct Term {
+pub struct Steno {
     keys: Keys<Stdin>,
     stdout: RawTerminal<Stdout>,
 
@@ -16,9 +16,9 @@ pub struct Term {
     counts: Vec<usize>,
 }
 
-impl Term {
-    pub fn new() -> Result<Term> {
-        Ok(Term {
+impl Steno {
+    pub fn new() -> Result<Steno> {
+        Ok(Steno {
                keys: stdin().keys(),
                stdout: stdout().into_raw_mode()?,
                counts: vec![],
@@ -79,7 +79,7 @@ impl Term {
     }
 }
 
-impl Write for Term {
+impl Write for Steno {
     fn flush(&mut self) -> io::Result<()> {
         self.stdout.flush()
     }

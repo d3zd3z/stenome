@@ -20,21 +20,21 @@ pub use stroke::Stroke;
 // pub use words::{Counts, LearnWord, Words, Store};
 use timelearn::Store;
 use learn::Learn;
-use term::Term;
+use steno::Steno;
 
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
 
 mod stroke;
 mod learn;
-mod term;
+mod steno;
 pub mod legacy;
 
 pub fn run() {
     let st = Store::open("words.db").unwrap();
 
-    let term = Term::new().unwrap();
+    let user = Steno::new().unwrap();
 
-    let mut learn = Learn::new(st, term);
+    let mut learn = Learn::new(st, user);
     learn.run();
     /*
     let words = learn.into_words();
