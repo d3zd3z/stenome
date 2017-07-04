@@ -34,20 +34,23 @@ impl User for Simple {
         write!(self, "Q: {}: ", word.question)?;
         self.flush()?;
 
-        // Wait for a space or escape.
-        loop {
-            let c = match self.keys.next() {
-                None => panic!("End of input"),
-                Some(c) => c,
-            };
-            match c? {
-                Key::Esc => return Ok(Status::Stopped),
-                Key::Char(' ') => break,
-                _ => {}
+        // If the answer is the string "play", don't wait for space and an answer.
+        if word.answer != "play" {
+            loop {
+                let c = match self.keys.next() {
+                    None => panic!("End of input"),
+                    Some(c) => c,
+                };
+                match c? {
+                    Key::Esc => return Ok(Status::Stopped),
+                    Key::Char(' ') => break,
+                    _ => {}
+                }
             }
+            write!(self, "\r\n\nA: {} (1, bad, 4 - good): ", word.answer)?;
+        } else {
+            write!(self, "\r\n\n    (1 - bad, 4 - good): ")?;
         }
-
-        write!(self, "\r\n\nQ: {} (1, bad, 4 - good): ", word.answer)?;
         self.flush()?;
 
         // Wait for the 1-4 answer or escape.
