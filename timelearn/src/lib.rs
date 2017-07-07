@@ -337,6 +337,16 @@ impl Problem {
     }
 }
 
+/// The status of learning.  TODO: This doesn't belong in this crate.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Status {
+    /// Continue the learning process, with the given factor.
+    Continue(u8),
+    /// The user has requested that we stop.
+    Stopped,
+}
+
+
 /// A helper to populate a `Store` with `Problem`s.
 pub struct Populator<'a> {
     tx: Transaction<'a>,

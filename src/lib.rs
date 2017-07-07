@@ -20,7 +20,7 @@ use std::result;
 pub use stroke::Stroke;
 // pub use words::{Counts, LearnWord, Words, Store};
 use timelearn::Store;
-pub use timelearn::Problem;
+pub use timelearn::{Problem, Status};
 use learn::Learn;
 use steno::Steno;
 use simple::Simple;
@@ -32,12 +32,6 @@ mod learn;
 mod simple;
 mod steno;
 pub mod legacy;
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Status {
-    Continue(u8),
-    Stopped,
-}
 
 /// A User is something that can be asked to solve a single problem.  It implements `Write` which
 /// is used to prompt and present information.  The method `single` is used to ask a single
