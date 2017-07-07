@@ -21,6 +21,7 @@ extern crate rusqlite;
 use rand::{Rng, thread_rng};
 use rusqlite::{Connection, Transaction};
 use std::error;
+use std::io::Write;
 use std::path::Path;
 use std::result;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -346,6 +347,14 @@ pub enum Status {
     Stopped,
 }
 
+/// A User is something that can be asked to solve a single problem.  It implements `Write` which
+/// is used to prompt and present information.  The method `single` is used to ask a single
+/// question, and get status back from it.  TODO: This doesn't belong in this crate.
+pub trait User: Write {
+    /// Ask the user to answer a single problem.  Should return a status to indicate how well the
+    /// user did.
+    fn single(&mut self, word: &Problem) -> Result<Status>;
+}
 
 /// A helper to populate a `Store` with `Problem`s.
 pub struct Populator<'a> {

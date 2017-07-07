@@ -14,13 +14,12 @@ extern crate timelearn;
 extern crate tempdir;
 
 use std::error;
-use std::io::Write;
 use std::result;
 
 pub use stroke::Stroke;
 // pub use words::{Counts, LearnWord, Words, Store};
 use timelearn::Store;
-pub use timelearn::{Problem, Status};
+pub use timelearn::{Problem, Status, User};
 use learn::Learn;
 use steno::Steno;
 use simple::Simple;
@@ -32,13 +31,6 @@ mod learn;
 mod simple;
 mod steno;
 pub mod legacy;
-
-/// A User is something that can be asked to solve a single problem.  It implements `Write` which
-/// is used to prompt and present information.  The method `single` is used to ask a single
-/// question, and get status back from it.
-pub trait User: Write {
-    fn single(&mut self, word: &Problem) -> Result<Status>;
-}
 
 pub fn run(path: &str) {
     let st = Store::open(path).unwrap();
