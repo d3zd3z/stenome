@@ -15,7 +15,8 @@ fn learning() {
     let db_path = tmp_dir.path().join("learn.db");
 
     {
-        let mut st = Store::create(&db_path).unwrap();
+        let mut st = Store::create(&db_path, "test").unwrap();
+        assert_eq!(st.get_kind(), "test");
 
         populate(&mut st).unwrap();
 
@@ -48,7 +49,8 @@ fn learning() {
     }
 
     // Close and open to make sure that works.
-    Store::open(&db_path).unwrap();
+    let st = Store::open(&db_path).unwrap();
+    assert_eq!(st.get_kind(), "test");
 }
 
 // Populate with test data.  Make a mix of unlearned problems, and learned ones that are ready to
