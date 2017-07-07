@@ -326,6 +326,18 @@ pub struct Problem {
 }
 
 impl Problem {
+    /// Create a problem.  This is generally used for testing, as it creates a problem with
+    /// defaults for next, and interval.
+    pub fn new(question: &str, answer: &str) -> Problem {
+        Problem {
+            id: -1,
+            question: question.to_owned(),
+            answer: answer.to_owned(),
+            next: now() + 5.0,
+            interval: 5.0,
+        }
+    }
+
     /// Get the Posix timestamp for when we will next ask this Problem.
     pub fn get_next(&self) -> f64 {
         self.next

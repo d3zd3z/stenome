@@ -2,10 +2,15 @@
 name = "stenome"
 version = "0.1.0"
 authors = ["davidb"]
-description = "Plover drills, inspired by the Plover Dojo.  With SRS."
+description = "SRS drills.  Supports Plover, and midi."
 readme = "README.rst"
-keywords = ["steno", "plover", "srs"]
+keywords = ["steno", "plover", "srs", "piano"]
 license = "MIT"
+
+[features]
+default = []
+
+midi = ["midilearn"]
 
 [dependencies]
 rand = "0.3"
@@ -16,6 +21,7 @@ termion = "1.4"
 rusqlite = "0.12"
 
 timelearn = { path = "timelearn" }
+midilearn = { path = "midilearn", optional = true }
 
 [dev-dependencies]
 tempdir = "0.3"

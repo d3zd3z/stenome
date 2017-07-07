@@ -10,12 +10,17 @@ extern crate termion;
 
 extern crate timelearn;
 
+#[cfg(feature = "midi")]
+extern crate midilearn;
+
 #[cfg(test)]
 extern crate tempdir;
 
 use std::error;
 use std::result;
 
+#[cfg(feature = "midi")]
+use midilearn::MidiLearn;
 pub use stroke::Stroke;
 // pub use words::{Counts, LearnWord, Words, Store};
 use timelearn::Store;
@@ -36,16 +41,39 @@ pub fn run(path: &str) {
     let st = Store::open(path).unwrap();
 
     if st.get_kind() == "steno" {
-        let mut user = Steno::new().unwrap();
-        let mut learn = Learn::new(st, &mut user);
-        learn.run();
+        run_steno(st);
     } else if st.get_kind() == "simple" {
-        let mut user = Simple::new().unwrap();
-        let mut learn = Learn::new(st, &mut user);
-        learn.run();
+        run_simple(st);
+    } else if st.get_kind() == "midi" {
+        run_midi(st);
     } else {
         panic!("Unknown store type '{}'", st.get_kind());
     }
+}
+
+fn run_steno(st: Store) {
+    let mut user = Steno::new().unwrap();
+    let mut learn = Learn::new(st, &mut user);
+    learn.run();
+}
+
+fn run_simple(st: Store) {
+    let mut user = Simple::new().unwrap();
+    let mut learn = Learn::new(st, &mut user);
+    learn.run();
+}
+
+#[cfg(feature = "midi")]
+fn run_midi(st: Store) {
+    MidiLearn::with_new(|user: &mut MidiLearn| {
+        let mut learn = Learn::new(st, user);
+        learn.run();
+    }).unwrap();
+}
+
+#[cfg(not(feature = "midi"))]
+fn run_midi(_st: Store) {
+    panic!("Program not built with midi support");
 }
 
 // Format an interval (in seconds) in terms of nicer units.
