@@ -156,9 +156,9 @@ impl ser::Serialize for Stroke {
 }
 
 // Deserialize for Stroke.
-impl de::Deserialize for Stroke {
+impl<'de> de::Deserialize<'de> for Stroke {
     fn deserialize<D>(deserializer: D) -> result::Result<Self, D::Error>
-        where D: de::Deserializer
+        where D: de::Deserializer<'de>
     {
         deserializer.deserialize_str(StrokeVisitor)
     }
@@ -166,7 +166,7 @@ impl de::Deserialize for Stroke {
 
 struct StrokeVisitor;
 
-impl de::Visitor for StrokeVisitor {
+impl<'de> de::Visitor<'de> for StrokeVisitor {
     type Value = Stroke;
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         write!(formatter, "a string representing a single steno stroke")
