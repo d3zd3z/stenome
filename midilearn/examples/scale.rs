@@ -2,7 +2,7 @@
 
 extern crate midilearn;
 
-use midilearn::{MidiLearn, Problem};
+use midilearn::{MidiLearn, Problem, User};
 
 fn main() {
     let prob = Problem::new("scale: C major",
