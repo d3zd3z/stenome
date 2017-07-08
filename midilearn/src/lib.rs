@@ -49,8 +49,8 @@ pub use timelearn::{Problem, Status, User};
 mod note;
 use note::Note;
 
-mod sequence;
-use sequence::{Scale, ScaleSeq};
+mod scales;
+use scales::{Scale, ScaleSeq};
 
 /// Just box the errors for now.  TODO: Use a proper error type.
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
