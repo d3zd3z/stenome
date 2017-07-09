@@ -81,6 +81,25 @@ impl User for MidiLearn {
     /// Practice a single exercise.  Waits for the user to play the exercise, and then returns a
     /// status indicating how well it was played.
     fn single(&mut self, word: &Problem) -> Result<Status> {
+        let st1 = self.single_once(word)?;
+
+        let mut stn = st1;
+        loop {
+            match stn {
+                // If good, return the initial status.
+                Status::Continue(4) => return Ok(st1),
+                Status::Stopped => return Ok(Status::Stopped),
+                _ => (),
+            }
+            println!("** Mistakes made, please play again **");
+            stn = self.single_once(word)?;
+        }
+    }
+}
+
+impl MidiLearn {
+    /// Ask the user once to play.
+    fn single_once(&mut self, word: &Problem) -> Result<Status> {
         println!("Play: {}", word.question);
 
         let json: Value = serde_json::from_str(&word.answer)?;
