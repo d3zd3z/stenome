@@ -60,7 +60,10 @@ impl Store {
             tx.execute("INSERT INTO config VALUES ('kind', ?)", &[&kind])?;
             tx.execute("CREATE INDEX learning_next ON learning (next)", &[])?;
             tx.execute("CREATE TABLE schema_version (version TEXT NOT NULL)", &[])?;
-            tx.execute("INSERT INTO schema_version VALUES (?)", &[&"20170704A"])?;
+            tx.execute("CREATE TABLE log (stamp REAL NOT NULL,
+                score INTEGER NOT NULL,
+                probid INTEGER REFERENCES probs (id) NOT NULL)", &[])?;
+            tx.execute("INSERT INTO schema_version VALUES (?)", &[&"20170709A"])?;
             tx.commit()?;
         }
 
@@ -84,7 +87,7 @@ impl Store {
             match rows.next() {
                 Some(text) => {
                     let text = text?;
-                    if text != "20170704A" {
+                    if text != "20170709A" {
                         panic!("schema version mismatch {}", text);
                     }
                 }
@@ -179,6 +182,7 @@ impl Store {
     /// Update a word, based on a learning factor.  The scale is 1..4, with 1 being totally
     /// incorrect, and 4 being totally correct.
     pub fn update(&mut self, prob: Problem, factor: u8) -> Result<()> {
+        let orig_factor = factor;
         let factor = match factor {
             1 => 0.25,
             2 => 0.9,
@@ -198,6 +202,8 @@ impl Store {
         let tx = self.conn.transaction()?;
         tx.execute("INSERT OR REPLACE INTO learning VALUES (?, ?, ?)",
                      &[&prob.id, &prob.next, &prob.interval])?;
+        tx.execute("INSERT INTO log VALUES (?, ?, ?)",
+                   &[&now(), &prob.id, &orig_factor])?;
         tx.commit()?;
 
         Ok(())
