@@ -146,11 +146,11 @@ impl MidiLearn {
                     if notes.is_empty() {
                         idle_count = 0;
                     }
-                    if idle_count >= 3 {
+                    if idle_count >= 6 {
                         println!("Timing out");
                         break;
                     }
-                    thread::sleep(Duration::new(1, 0));
+                    thread::sleep(Duration::from_millis(250));
                 }
             }
         }
