@@ -33,6 +33,7 @@ function gen_scale(ival, name)
     gen_scale(ival, name, "2H")
 end
 
+println("DELETE FROM probs;")
 gen_scale("WWHWWWH", "major")
 gen_scale("WHWWWHW", "minor (dorian)")
 gen_scale("WWHWWHW", "dominant (mixolydian)")

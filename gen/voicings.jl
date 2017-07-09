@@ -17,19 +17,19 @@ end
 # that much, and the simple Circle of V is fine.  F♯ and G♭ and both
 # printed (making for 13 of each voicing), since both are common.
 major_iivi = [
-    ["Dm7", "G7", "CM7"],
-    ["Am7", "D7", "GM7"],
-    ["Em7", "A7", "DM7"],
-    ["Bm7", "E7", "AM7"],
-    ["F♯m7", "B7", "EM7"],
-    ["C♯m7", "F♯7", "BM7"],
-    ["G♯m7", "C♯7", "F♯M7"],
-    ["A♭m7", "D♭7", "G♭M7"],
-    ["E♭m7", "A♭7", "D♭M7"],
-    ["B♭m7", "E♭7", "A♭M7"],
-    ["Fm7", "B♭7", "E♭M7"],
-    ["Cm7", "F7", "B♭M7"],
-    ["Gm7", "C7", "FM7"] ]
+    ["Dm7", "G7", "CΔ"],
+    ["Am7", "D7", "GΔ"],
+    ["Em7", "A7", "DΔ"],
+    ["Bm7", "E7", "AΔ"],
+    ["F♯m7", "B7", "EΔ"],
+    ["C♯m7", "F♯7", "BΔ"],
+    ["G♯m7", "C♯7", "F♯Δ"],
+    ["A♭m7", "D♭7", "G♭Δ"],
+    ["E♭m7", "A♭7", "D♭Δ"],
+    ["B♭m7", "E♭7", "A♭Δ"],
+    ["Fm7", "B♭7", "E♭Δ"],
+    ["Cm7", "F7", "B♭Δ"],
+    ["Gm7", "C7", "FΔ"] ]
 
 # Generate patterns for a particular voicing.  The name will be
 # printed before, and the hint afterwards.  This should be enough for
@@ -41,6 +41,8 @@ function gen_cycle(exercise, progression, name, hint; chord_start=1)
         emit("$name $chord $hint ($exercise)", "play")
     end
 end
+
+println("DELETE FROM probs;")
 
 # Exercise 1-1A, ii-V-I, voiced with a 1-7 shell first.
 gen_cycle("1-1A", major_iivi, "shell", "1-7")
