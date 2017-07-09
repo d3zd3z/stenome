@@ -128,17 +128,25 @@ impl MidiLearn {
 
     /// Record the user playing a scale.  Consider the scale done after a small pause of no
     /// playing.
-    fn record_scale(&mut self) -> Result<Vec<Note>> {
-        let mut notes = vec![];
+    fn record_scale(&mut self) -> Result<Vec<Vec<Note>>> {
+        let mut notes: Vec<Vec<Note>> = vec![];
         let mut idle_count = 0;
+        let mut last_time = 0;
         loop {
             match self.input.read()? {
                 Some(ev) => {
                     // We only care about note down events here.
                     if ev.message.status & 0xf0 == 0x80 {
-                        // println!("Got notes: {:?}", ev);
-                        notes.push(Note(ev.message.data1));
+                        if !notes.is_empty() && ev.timestamp - last_time < 80 {
+                            notes.last_mut().unwrap().push(Note(ev.message.data1));
+                            // println!("chord : {:?}", notes);
+                        } else {
+                            // Individual note.
+                            notes.push(vec![Note(ev.message.data1)]);
+                            // println!("single: {:?}", notes);
+                        }
                         idle_count = 0;
+                        last_time = ev.timestamp;
                     }
                 },
                 None => {
@@ -154,6 +162,12 @@ impl MidiLearn {
                 }
             }
         }
+
+        // Sort the chords, since the incoming order could differ.
+        for ch in notes.iter_mut() {
+            ch.sort();
+        }
+
         Ok(notes)
     }
 }

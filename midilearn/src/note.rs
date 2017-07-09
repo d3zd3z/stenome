@@ -5,7 +5,7 @@ use std::ops::Add;
 use Result;
 
 // The value of a single MIDI note.  A wrapper around the raw MIDI note value.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Note(pub u8);
 
 impl Note {

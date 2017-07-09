@@ -5,8 +5,9 @@ use Result;
 use note::Note;
 
 /// A vector of notes that are expected to be played linearly.  The notes can be played legato.
+/// The inner vector holds notes that should be played simultaneously, such as with both hands.
 #[derive(Debug)]
-pub struct ScaleSeq(Vec<Note>);
+pub struct ScaleSeq(Vec<Vec<Note>>);
 
 impl ScaleSeq {
     /// Generate the sequence for the described scale.
@@ -49,6 +50,15 @@ impl ScaleSeq {
             style => return Err(format!("Unknown scale style: {:?}", style).into()),
         }
 
+        // Build the note vectors out of the notes.
+        let notes: Vec<_> = notes.iter().map(|&n| {
+            let mut each = vec![n];
+            for i in 1..scale.hands {
+                each.push(n + (12 * i) as i8);
+            }
+            each
+        }).collect();
+
         Ok(ScaleSeq(notes))
     }
 
@@ -57,14 +67,24 @@ impl ScaleSeq {
     /// notes in the ScaleSeq.  Returns true if the first note matches and a possible adjustment
     /// has been made.  Return false if there are either no notes, or the first not is not the
     /// right note.
-    pub fn adjust_octave(&mut self, played: &[Note]) -> bool {
+    pub fn adjust_octave(&mut self, played: &[Vec<Note>]) -> bool {
         let my_first = match self.0.first() {
             None => return false,
-            Some(&v) => v,
+            Some(v) => {
+                match v.first() {
+                    None => return false,
+                    Some(&v) => v,
+                }
+            }
         };
         let played_first = match played.first() {
             None => return false,
-            Some(&note) => note,
+            Some(v) => {
+                match v.first() {
+                    None => return false,
+                    Some(&v) => v,
+                }
+            }
         };
 
         if my_first == played_first {
@@ -74,7 +94,9 @@ impl ScaleSeq {
         let shift = played_first.0 as i32 - my_first.0 as i32;
         if shift % 12 == 0 {
             for me in &mut self.0 {
-                me.0 = (me.0 as i32 + shift) as u8;
+                for n in me.iter_mut() {
+                    *n = *n + shift as i8;
+                }
             }
             true
         } else {
@@ -83,7 +105,8 @@ impl ScaleSeq {
     }
 
     /// Determine how different what the user played is from what is given.
-    pub fn differences(&self, played: &[Note]) -> usize {
+    pub fn differences(&self, played: &[Vec<Note>]) -> usize {
+        // println!("Compare: {:?} and\n         {:?}", self.0, played);
         editdistancewf::distance(self.0.iter(), played.iter())
     }
 }

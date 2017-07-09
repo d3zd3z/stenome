@@ -15,3 +15,7 @@ editdistancewf = "0.2"
 [[example]]
 name = "scale"
 path = "examples/scale.rs"
+
+[[example]]
+name = "dual"
+path = "examples/dual.rs"
