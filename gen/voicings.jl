@@ -31,6 +31,25 @@ major_iivi = [
     ["Cm7", "F7", "B♭Δ"],
     ["Gm7", "C7", "FΔ"] ]
 
+# Diminished tri-tone sub.  The idea of this pattern is to alternate
+# the inversion of the chords so that the pattern only moves slightly
+# on the piano.  See p39 in the deGreg book for an example.
+min_tritone_sub = [
+    ["CΔ", "C♯°7", "Dm7", "D♯°7", "Em7", "E♭7", "Dm7", "D♭7", "CΔ"],
+    ["FΔ", "F♯°7", "Gm7", "G♯°7", "Am7", "A♭7", "Gm7", "G♭7", "FΔ"],
+    ["B♭Δ", "B°7", "Cm7", "C♯°7", "Dm7", "D♭7", "Cm7", "B7", "B♭Δ"],
+    ["E♭Δ", "E°7", "Fm7", "F♯°7", "Gm7", "G♭7", "Fm7", "E7", "E♭Δ"],
+
+    ["A♭Δ", "A°7", "B♭m7", "B°7", "Cm7", "B7", "B♭m7", "A7", "A♭Δ"],
+    ["D♭Δ", "D°7", "E♭m7", "E°7", "Fm7", "E7", "E♭m7", "D7", "D♭Δ"],
+    ["G♭Δ", "G°7", "A♭m7", "A°7", "B♭m7", "A7", "A♭m7", "G7", "G♭Δ"],
+    ["BΔ", "C°7", "C♯m7", "D°7", "D♯m7", "D7", "C♯m7", "C7", "BΔ"],
+
+    ["EΔ", "F°7", "F♯m7", "G°7", "G♯m7", "G7", "F♯m7", "F7", "EΔ"],
+    ["AΔ", "A♯°7", "Bm7", "C°7", "C♯m7", "C7", "Bm7", "B♭7", "AΔ"],
+    ["DΔ", "D♯°7", "Em7", "F°7", "F♯m7", "F7", "Em7", "E♭7", "DΔ"],
+    ["GΔ", "G♯°7", "Am7", "A♯°7", "Bm7", "B♭7", "Am7", "A♭7", "GΔ"] ]
+
 # Generate patterns for a particular voicing.  The name will be
 # printed before, and the hint afterwards.  This should be enough for
 # the reader to understand how to voice the chord.  The chord start
@@ -61,3 +80,27 @@ gen_cycle("1-3A", major_iivi, "shell", "1-7", chord_start=3)
 
 # Exercise 1-1B, ii-V-I, voiced with a 1-3 shell first.
 gen_cycle("1-3B", major_iivi, "shell", "1-3", chord_start=3)
+
+# Exercise 2-1A, ii-V-I, guide tones, 1-7-3 first.
+gen_cycle("2-1A", major_iivi, "guide", "1-7-3")
+
+# Exercise 2-1B, ii-V-I, guide tones, 1-3-7 first.
+gen_cycle("2-1B", major_iivi, "guide", "1-3-7")
+
+# Exercise 2-2A, I, guide tones, 1-7-3 first.
+gen_cycle("2-1A", major_iivi, "guide", "1-7-3", chord_start=2)
+
+# Exercise 2-2B, I, guide tones, 1-3-7 first.
+gen_cycle("2-1B", major_iivi, "guide", "1-3-7", chord_start=2)
+
+# Exercise 2-3A, V-I, guide tones, 1-7-3 first.
+gen_cycle("2-1A", major_iivi, "guide", "1-7-3", chord_start=3)
+
+# Exercise 2-3B, V-I, guide tones, 1-3-7 first.
+gen_cycle("2-1B", major_iivi, "guide", "1-3-7", chord_start=3)
+
+# Exercise 2-4A, Diminshed / Tri-tone sub, guide tones, 1-7-3 first.
+gen_cycle("2-4A", min_tritone_sub, "guide", "1-7-3")
+
+# Exercise 2-4B, Diminshed / Tri-tone sub, guide tones, 1-3-7 first.
+gen_cycle("2-4B", min_tritone_sub, "guide", "1-3-7")
