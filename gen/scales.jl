@@ -15,12 +15,12 @@ end
 
 key_names = [ "C", "G", "D", "A", "E", "B", "F♯", "G♭", "D♭", "A♭", "E♭", "B♭", "F" ]
 
-function gen_scale(ival, name, hand)
+function gen_scale(ival, hands, name, hand)
     for key in key_names
         answer = Dict("type" => "scale",
             "base" => key,
             "intervals" => ival,
-            "hands" => 1,
+            "hands" => hands,
             "octaves" => 2,
             "style" => "updown")
         emit("$hand-scale $key $name", JSON.json(answer))
@@ -28,9 +28,9 @@ function gen_scale(ival, name, hand)
 end
 
 function gen_scale(ival, name)
-    gen_scale(ival, name, "RH")
-    gen_scale(ival, name, "LH")
-    gen_scale(ival, name, "2H")
+    gen_scale(ival, 1, name, "RH")
+    gen_scale(ival, 1, name, "LH")
+    gen_scale(ival, 2, name, "2H")
 end
 
 println("DELETE FROM probs;")
