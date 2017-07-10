@@ -155,7 +155,7 @@ impl MidiLearn {
             match self.input.read()? {
                 Some(ev) => {
                     // We only care about note down events here.
-                    if ev.message.status & 0xf0 == 0x80 {
+                    if ev.message.status & 0xf0 == 0x90 {
                         if !notes.is_empty() && ev.timestamp - last_time < 80 {
                             notes.last_mut().unwrap().push(Note(ev.message.data1));
                             // println!("chord : {:?}", notes);
