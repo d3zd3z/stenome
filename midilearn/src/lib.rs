@@ -26,6 +26,10 @@
 //! notation (again with text or Unicode sharp/flat indicators).  The chord will be built using the
 //! next note of the given function.  The octave will be chosen so that the lowest non-root note
 //! will be between F#-F surrounding middle C.
+//!
+//! For the notes, values can be chord positions.  It is also possible to have a note that is a
+//! placeholder, as an empty string, which indicates that the following note should be moved up an
+//! octave.
 
 #![deny(missing_docs)]
 
@@ -50,7 +54,7 @@ mod note;
 use note::Note;
 
 mod scales;
-use scales::{Scale, ScaleSeq};
+use scales::{Scale, ScaleSeq, Voicing};
 
 /// Just box the errors for now.  TODO: Use a proper error type.
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
@@ -126,7 +130,26 @@ impl MidiLearn {
                 println!("First note mismatch, stopping");
                 Ok(Status::Stopped)
             }
+        } else if is_type(&json, "voicing") {
+            let chords: Voicing = serde_json::from_value(json)?;
 
+            let seq = ScaleSeq::from_voicing(&chords)?;
+            println!("chords: {:?}", seq);
+            self.drain()?;
+            let user = self.record_scale()?;
+            println!("user: {:?}", user);
+            if user[0].len() == 1 {
+                println!("Single note, stopping");
+                Ok(Status::Stopped)
+            } else {
+                let diff_count = seq.differences(&user);
+                println!("There are {} differences", diff_count);
+                if diff_count == 0 {
+                    Ok(Status::Continue(4))
+                } else {
+                    Ok(Status::Continue(1))
+                }
+            }
         } else {
             return Err(format!("Invalid type: {:?}", json["type"].as_str()).into());
         }

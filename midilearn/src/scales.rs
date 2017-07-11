@@ -62,6 +62,14 @@ impl ScaleSeq {
         Ok(ScaleSeq(notes))
     }
 
+    /// Convert an input voicing into a sequence.  This is very straightforward, as the voicing
+    /// exercises are generated before entering into the database.
+    pub fn from_voicing(voicing: &Voicing) -> Result<ScaleSeq> {
+        Ok(ScaleSeq(voicing.chords.iter().map(|chord| {
+            chord.iter().map(|note| Note(*note)).collect()
+        }).collect()))
+    }
+
     /// Scales can be played in a different octave than requested.  Compare the first note the user
     /// played with the note given.  If they are off by some number of octaves, adjust all of the
     /// notes in the ScaleSeq.  Returns true if the first note matches and a possible adjustment
@@ -119,4 +127,10 @@ pub struct Scale {
     pub hands: u32,
     pub octaves: u32,
     pub style: String,
+}
+
+/// A structure mapping to the json data that is the input for a voicing.
+#[derive(Debug, Deserialize)]
+pub struct Voicing {
+    chords: Vec<Vec<u8>>,
 }

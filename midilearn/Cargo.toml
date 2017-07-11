@@ -18,4 +18,7 @@ path = "examples/scale.rs"
 
 [[example]]
 name = "dual"
-path = "examples/dual.rs"
+
+[[example]]
+name = "chord"
+path = "examples/chord.rs"
