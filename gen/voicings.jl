@@ -97,7 +97,6 @@ function make_notes(base, v :: ChordVoicing, first=false)
     end
     # TODO: Adjust octave.
     while first && rh_start < 53
-        println("up from $rh_start")
         rh_start += 12
         notes .+= 12
         base += 12
@@ -133,8 +132,8 @@ function gen_cycle(exercise, progression, voicing, hint; chord_start=1)
     name = voicing.name
     for prog in progression
         chord = join(prog[chord_start:end], "-")
-        subvoicing = Voicing(voicing.name, voicing.chords[chord_start:end])
-        notes = make_notes(prog[chord_start], subvoicing)
+        notes = make_notes(prog[1], voicing)
+        notes["chords"] = notes["chords"][chord_start:end]
         emit("$name $chord $hint ($exercise)", JSON.json(notes))
     end
 end
