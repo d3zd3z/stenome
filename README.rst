@@ -1,6 +1,22 @@
 Stenome
 #######
 
+Active SRS learning.
+
+Probably the most common Open Source SRS learning application is Anki.
+Anki works well.  Stenome is also an application for doing SRS
+learning, but it has a focus on learning things that involve
+specialized input devices.  It was originally written for learning to
+use a Steno keyboard (based on information from the Plover Dojo).  It
+has since been aquiring MIDI input support to help learn scales and
+chord voicings.
+
+The MIDI support is not well documented yet, as it is still under
+heavy development.
+
+Steno
+=====
+
 The Plover Dojo is a great way to learn Plover/Steno.  However, the
 Dojo seems to be lacking in support for SRS (spaced repetition), and
 as more and more words are learned, it is easy to begin to forget
