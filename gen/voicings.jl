@@ -96,7 +96,7 @@ function make_notes(base, v :: ChordVoicing, first=false)
         push!(notes, cur)
     end
     # TODO: Adjust octave.
-    while first && rh_start < 53
+    while first && rh_start < 54
         rh_start += 12
         notes .+= 12
         base += 12
@@ -179,10 +179,10 @@ function generate()
     gen_cycle("1-1B", major_iivi, shell13_voicing, "1-3")
 
     # Exercise 1-1A, ii-V-I, voiced with a 1-7 shell first.
-    gen_cycle("1-1A", major_iivi, shell17_voicing, "1-7", chord_start=2)
+    gen_cycle("1-1A", major_iivi, shell13_voicing, "1-7", chord_start=2)
 
     # Exercise 1-1B, ii-V-I, voiced with a 1-3 shell first.
-    gen_cycle("1-1B", major_iivi, shell13_voicing, "1-3", chord_start=2)
+    gen_cycle("1-1B", major_iivi, shell17_voicing, "1-3", chord_start=2)
 
     # Exercise 1-1A, ii-V-I, voiced with a 1-7 shell first.
     gen_cycle("1-1A", major_iivi, shell17_voicing, "1-7", chord_start=3)
@@ -197,10 +197,10 @@ function generate()
     gen_cycle("2-1B", major_iivi, guide137_voicing, "1-3-7")
 
     # Exercise 2-1A, ii-V-I, guide tones, 1-7-3 first.
-    gen_cycle("2-1A", major_iivi, guide173_voicing, "1-7-3", chord_start=2)
+    gen_cycle("2-1A", major_iivi, guide137_voicing, "1-7-3", chord_start=2)
 
     # Exercise 2-1B, ii-V-I, guide tones, 1-3-7 first.
-    gen_cycle("2-1B", major_iivi, guide137_voicing, "1-3-7", chord_start=2)
+    gen_cycle("2-1B", major_iivi, guide173_voicing, "1-3-7", chord_start=2)
 
     # Exercise 2-1A, ii-V-I, guide tones, 1-7-3 first.
     gen_cycle("2-1A", major_iivi, guide173_voicing, "1-7-3", chord_start=3)
