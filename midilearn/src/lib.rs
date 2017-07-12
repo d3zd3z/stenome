@@ -134,10 +134,10 @@ impl MidiLearn {
             let chords: Voicing = serde_json::from_value(json)?;
 
             let seq = ScaleSeq::from_voicing(&chords)?;
-            println!("chords: {:?}", seq);
+            // println!("chords: {:?}", seq);
             self.drain()?;
             let user = self.record_scale()?;
-            println!("user: {:?}", user);
+            // println!("user: {:?}", user);
             if user[0].len() == 1 {
                 println!("Single note, stopping");
                 Ok(Status::Stopped)
