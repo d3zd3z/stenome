@@ -115,7 +115,49 @@ impl ScaleSeq {
     /// Determine how different what the user played is from what is given.
     pub fn differences(&self, played: &[Vec<Note>]) -> usize {
         // println!("Compare: {:?} and\n         {:?}", self.0, played);
-        editdistancewf::distance(self.0.iter(), played.iter())
+        editdistancewf::distance(ChordNoteIter::new(&self.0),
+            ChordNoteIter::new(played))
+    }
+}
+
+// An iterator that spreads the notes out of a chord, and inserts a separator between them.  Since
+// MIDI notes can only have the value 0-127, we can just use something like 128 as the chord
+// marker.
+struct ChordNoteIter<'a> {
+    // The chords we're iterating over.  If the slice is empty, we're done.
+    chords: &'a [Vec<Note>],
+    // The position within the first chord.  If this is past the end of the chords, we're
+    // generating the separator.
+    pos: usize,
+}
+
+impl<'a> ChordNoteIter<'a> {
+    fn new(chords: &[Vec<Note>]) -> ChordNoteIter {
+        ChordNoteIter {
+            chords: chords,
+            pos: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for ChordNoteIter<'a> {
+    type Item = Note;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let chord = match self.chords.first() {
+            None => return None,
+            Some(ch) => ch,
+        };
+
+        if self.pos >= chord.len() {
+            self.chords = &self.chords[1..];
+            self.pos = 0;
+            Some(Note(128))
+        } else {
+            let result = chord[self.pos];
+            self.pos += 1;
+            Some(result)
+        }
     }
 }
 
