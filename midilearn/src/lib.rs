@@ -115,7 +115,7 @@ impl MidiLearn {
             // println!("scale: {:?}", seq);
 
             self.drain()?;
-            let user = self.record_scale()?;
+            let user = self.record_scale(6)?;
             // println!("Played: {:?}", user);
             if seq.adjust_octave(&user) {
                 // println!("First note good: {:?}", seq);
@@ -136,7 +136,7 @@ impl MidiLearn {
             let seq = ScaleSeq::from_voicing(&chords)?;
             // println!("chords: {:?}", seq);
             self.drain()?;
-            let user = self.record_scale()?;
+            let user = self.record_scale(8)?;
             // println!("user: {:?}", user);
             if user[0].len() == 1 {
                 println!("Single note, stopping");
@@ -169,8 +169,8 @@ impl MidiLearn {
     }
 
     /// Record the user playing a scale.  Consider the scale done after a small pause of no
-    /// playing.
-    fn record_scale(&mut self) -> Result<Vec<Vec<Note>>> {
+    /// playing.  The timeout, is the number of 250ms ticks to consider the recording done.
+    fn record_scale(&mut self, timeout: usize) -> Result<Vec<Vec<Note>>> {
         let mut notes: Vec<Vec<Note>> = vec![];
         let mut idle_count = 0;
         let mut last_time = 0;
@@ -196,7 +196,7 @@ impl MidiLearn {
                     if notes.is_empty() {
                         idle_count = 0;
                     }
-                    if idle_count >= 6 {
+                    if idle_count >= timeout {
                         println!("Timing out");
                         break;
                     }
