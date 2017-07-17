@@ -368,10 +368,13 @@ pub enum Status {
 /// A User is something that can be asked to solve a single problem.  It implements `Write` which
 /// is used to prompt and present information.  The method `single` is used to ask a single
 /// question, and get status back from it.  TODO: This doesn't belong in this crate.
+/// The value `next` can be used to give a hint as to what problem might be asked next.  This is
+/// useful for music performance questions, where the user needs to see the problem ahead of time
+/// to prepare to play it.
 pub trait User: Write {
     /// Ask the user to answer a single problem.  Should return a status to indicate how well the
     /// user did.
-    fn single(&mut self, word: &Problem) -> Result<Status>;
+    fn single(&mut self, word: &Problem, next: Option<&Problem>) -> Result<Status>;
 }
 
 /// A helper to populate a `Store` with `Problem`s.

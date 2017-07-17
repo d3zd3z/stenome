@@ -86,7 +86,7 @@ impl Steno {
 
 impl User for Steno {
     /// Ask the user to stroke a single problem, returning `Status` indicating how the user did.
-    fn single(&mut self, word: &Problem) -> Result<Status> {
+    fn single(&mut self, word: &Problem, _next: Option<&Problem>) -> Result<Status> {
         let mut state = Single::new(self, word);
         state.run()
     }

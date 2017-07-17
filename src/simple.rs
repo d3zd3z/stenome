@@ -30,7 +30,7 @@ impl Simple {
 }
 
 impl User for Simple {
-    fn single(&mut self, word: &Problem) -> Result<Status> {
+    fn single(&mut self, word: &Problem, _next: Option<&Problem>) -> Result<Status> {
         write!(self, "Q: {}: ", word.question)?;
         self.flush()?;
 

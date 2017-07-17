@@ -16,6 +16,6 @@ fn main() {
                             }"#);
 
     MidiLearn::with_new(|learn: &mut MidiLearn| {
-        println!("Status: {:?}", learn.single(&prob));
+        println!("Status: {:?}", learn.single(&prob, None));
     }).unwrap();
 }

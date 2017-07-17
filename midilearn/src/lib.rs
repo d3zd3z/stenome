@@ -83,9 +83,10 @@ impl MidiLearn {
 
 impl User for MidiLearn {
     /// Practice a single exercise.  Waits for the user to play the exercise, and then returns a
-    /// status indicating how well it was played.
-    fn single(&mut self, word: &Problem) -> Result<Status> {
-        let st1 = self.single_once(word)?;
+    /// status indicating how well it was played.  Next can be set to the possibly next problem,
+    /// which will be shown after the current one.
+    fn single(&mut self, word: &Problem, next: Option<&Problem>) -> Result<Status> {
+        let st1 = self.single_once(word, next)?;
 
         let mut stn = st1;
         loop {
@@ -96,15 +97,19 @@ impl User for MidiLearn {
                 _ => (),
             }
             println!("** Mistakes made, please play again **");
-            stn = self.single_once(word)?;
+            stn = self.single_once(word, next)?;
         }
     }
 }
 
 impl MidiLearn {
     /// Ask the user once to play.
-    fn single_once(&mut self, word: &Problem) -> Result<Status> {
+    fn single_once(&mut self, word: &Problem, next: Option<&Problem>) -> Result<Status> {
         println!("Play: {}", word.question);
+        match next {
+            None => (),
+            Some(n) => println!("      {}", n.question),
+        }
 
         let json: Value = serde_json::from_str(&word.answer)?;
         // println!("Json: {:?}, {:?}", json, json["typr"]);
