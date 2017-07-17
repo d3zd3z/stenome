@@ -130,7 +130,17 @@ impl Store {
 
     /// Query for the next problem that has expired.  If Some, then this is the next problem that
     /// should be asked.
+    #[deprecated(since="0.2", note="Please use get_nexts")]
     pub fn get_next(&mut self) -> Result<Option<Problem>> {
+        let mut vec = self.get_nexts(1)?;
+
+        // We can just use pop because there should only be one element.
+        Ok(vec.pop())
+    }
+
+    /// Query for 'n' upcoming problems that have expired.  This will return a Vec of problems,
+    /// with element 0 being the next problem that should be asked.
+    pub fn get_nexts(&mut self, count: usize) -> Result<Vec<Problem>> {
         let mut stmt = self.conn
             .prepare("
             SELECT id, question, answer, next, interval
@@ -138,20 +148,19 @@ impl Store {
             WHERE probs.id = learning.probid
                 AND next <= ?
             ORDER BY next
-            LIMIT 1")?;
-        let mut rows = stmt.query_map(&[&now()], |row| {
-                Problem {
-                    id: row.get(0),
-                    question: row.get(1),
-                    answer: row.get(2),
-                    next: row.get(3),
-                    interval: row.get(4),
-                }
-            })?;
-        match rows.next() {
-            Some(row) => Ok(Some(row?)),
-            None => Ok(None),
-        }
+            LIMIT ?")?;
+        let rows = stmt.query_map(&[&now(), &(count as i64)], |row| {
+            Problem {
+                id: row.get(0),
+                question: row.get(1),
+                answer: row.get(2),
+                next: row.get(3),
+                interval: row.get(4),
+            }
+        })?;
+        let rows: Result<Vec<Problem>> = rows.map(|x| x.map_err(|y| y.into())).collect();
+
+        rows
     }
 
     /// Get a problem that hasn't started being learned.  The interval and "next" will be set

@@ -23,20 +23,18 @@ impl<'u> Learn<'u> {
         loop {
             // TODO: Check for things that have expired we need to learn.
 
-            let mut word = match self.store.get_next().unwrap() {
+            let words = self.store.get_nexts(2).unwrap();
+            let mut words = words.into_iter();
+            let mut word = match words.next() {
                 None => {
-                    match self.store.get_new().unwrap() {
-                        None => {
-                            println!("No more words to learn\r");
-                            return;
-                        }
-                        Some(word) => word,
-                    }
+                    println!("No more words to learn\r");
+                    return;
                 }
                 Some(word) => word,
             };
+            let next = words.next();
 
-            let status = self.single(&mut word);
+            let status = self.single(&mut word, next.as_ref());
 
             match status {
                 Status::Stopped => break,
@@ -46,7 +44,7 @@ impl<'u> Learn<'u> {
     }
 
     // Learn a single word, updating its timing information based on how well it was learned.
-    fn single(&mut self, word: &Problem) -> Status {
+    fn single(&mut self, word: &Problem, next: Option<&Problem>) -> Status {
         let counts = self.store.get_counts().unwrap();
 
         writeln!(self.user,
@@ -76,7 +74,7 @@ impl<'u> Learn<'u> {
         writeln!(self.user, "  learned: {}\r\n\r", learned).unwrap();
         self.user.flush().unwrap();
 
-        self.user.single(word, None).unwrap()
+        self.user.single(word, next).unwrap()
     }
 }
 
