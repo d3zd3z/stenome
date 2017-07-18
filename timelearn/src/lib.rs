@@ -141,26 +141,42 @@ impl Store {
     /// Query for 'n' upcoming problems that have expired.  This will return a Vec of problems,
     /// with element 0 being the next problem that should be asked.
     pub fn get_nexts(&mut self, count: usize) -> Result<Vec<Problem>> {
-        let mut stmt = self.conn
-            .prepare("
-            SELECT id, question, answer, next, interval
-            FROM probs JOIN learning
-            WHERE probs.id = learning.probid
-                AND next <= ?
-            ORDER BY next
-            LIMIT ?")?;
-        let rows = stmt.query_map(&[&now(), &(count as i64)], |row| {
-            Problem {
-                id: row.get(0),
-                question: row.get(1),
-                answer: row.get(2),
-                next: row.get(3),
-                interval: row.get(4),
-            }
-        })?;
-        let rows: Result<Vec<Problem>> = rows.map(|x| x.map_err(|y| y.into())).collect();
+        let mut rows = {
+            let mut stmt = self.conn
+                .prepare("
+                SELECT id, question, answer, next, interval
+                FROM probs JOIN learning
+                WHERE probs.id = learning.probid
+                    AND next <= ?
+                ORDER BY next
+                LIMIT ?")?;
+            let rows = stmt.query_map(&[&now(), &(count as i64)], |row| {
+                Problem {
+                    id: row.get(0),
+                    question: row.get(1),
+                    answer: row.get(2),
+                    next: row.get(3),
+                    interval: row.get(4),
+                }
+            })?;
+            let rows: Result<Vec<Problem>> = rows.map(|x| x.map_err(|y| y.into())).collect();
+            rows?
+        };
 
-        rows
+        // If we got no rows back, fetch a new one.  It doesn't make any sense to return preview
+        // results ahead, since they will usually be incorrect (time will pass causing other
+        // problems to become ready.
+        if rows.is_empty() {
+            match self.get_new()? {
+                None => (),
+                Some(mut p) => {
+                    p.question.push_str(" NEW");
+                    rows.push(p);
+                },
+            }
+        }
+
+        Ok(rows)
     }
 
     /// Get a problem that hasn't started being learned.  The interval and "next" will be set
