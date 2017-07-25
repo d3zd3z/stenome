@@ -30,6 +30,12 @@
 //! For the notes, values can be chord positions.  It is also possible to have a note that is a
 //! placeholder, as an empty string, which indicates that the following note should be moved up an
 //! octave.
+//!
+//! { "type": "lick", "notes": [ [60],[62],[64],[67],[64,65],[67],[63,64],[60],[57],[60] ] }
+//!
+//! This describes a lick.  They differ from scales in that they are just given as midi note
+//! values, like scales they can be played in a different octave.  The values are just the midi
+//! notes to be played.
 
 #![deny(missing_docs)]
 
@@ -54,7 +60,7 @@ mod note;
 use note::Note;
 
 mod scales;
-use scales::{Scale, ScaleSeq, Voicing};
+use scales::{Lick, Scale, ScaleSeq, Voicing};
 
 /// Just box the errors for now.  TODO: Use a proper error type.
 pub type Result<T> = result::Result<T, Box<error::Error + Send + Sync>>;
@@ -135,6 +141,27 @@ impl MidiLearn {
                 println!("First note mismatch, stopping");
                 Ok(Status::Stopped)
             }
+        } else if is_type(&json, "lick") {
+            let lick: Lick = serde_json::from_value(json)?;
+
+            let mut seq = ScaleSeq::from_lick(&lick)?;
+
+            self.drain()?;
+            let user = self.record_scale(6)?;
+            // println!("Played: {:?}", user);
+            if seq.adjust_octave(&user) {
+                let diff_count = seq.differences(&user);
+                println!("There are {} differences", diff_count);
+                if diff_count <= 3 {
+                    Ok(Status::Continue(4 - diff_count as u8))
+                } else {
+                    Ok(Status::Continue(1))
+                }
+            } else {
+                println!("First note mismatch, stopping");
+                Ok(Status::Stopped)
+            }
+
         } else if is_type(&json, "voicing") {
             let chords: Voicing = serde_json::from_value(json)?;
 

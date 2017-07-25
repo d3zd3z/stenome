@@ -70,6 +70,13 @@ impl ScaleSeq {
         }).collect()))
     }
 
+    /// Convert an input lick into a sequence.  This is also very straightforward.
+    pub fn from_lick(lick: &Lick) -> Result<ScaleSeq> {
+        Ok(ScaleSeq(lick.notes.iter().map(|chord| {
+            chord.iter().map(|note| Note(*note)).collect()
+        }).collect()))
+    }
+
     /// Scales can be played in a different octave than requested.  Compare the first note the user
     /// played with the note given.  If they are off by some number of octaves, adjust all of the
     /// notes in the ScaleSeq.  Returns true if the first note matches and a possible adjustment
@@ -175,4 +182,10 @@ pub struct Scale {
 #[derive(Debug, Deserialize)]
 pub struct Voicing {
     chords: Vec<Vec<u8>>,
+}
+
+/// A structure mapping to the json data that is the input for a lick.
+#[derive(Debug, Deserialize)]
+pub struct Lick {
+    notes: Vec<Vec<u8>>,
 }

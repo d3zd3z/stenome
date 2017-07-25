@@ -22,3 +22,7 @@ name = "dual"
 [[example]]
 name = "chord"
 path = "examples/chord.rs"
+
+[[example]]
+name = "lick"
+path = "examples/lick.rs"
