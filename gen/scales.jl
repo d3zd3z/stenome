@@ -34,8 +34,11 @@ function gen_scale(ival, name)
 end
 
 println("DELETE FROM probs;")
+# Learn major scales with both hands.
 gen_scale("WWHWWWH", "major")
-gen_scale("WHWWWHW", "minor (dorian)")
-gen_scale("WWHWWHW", "dominant (mixolydian)")
-gen_scale("HWWHWWW", "half diminished (locrian)")
-gen_scale("WHWHWHWH", "diminished (whole-half)")
+
+# The rest of the scales, just right hand.
+gen_scale("WHWWWHW", 1, "minor (dorian)", "RH")
+gen_scale("WWHWWHW", 1, "dominant (mixolydian)", "RH")
+gen_scale("HWWHWWW", 1, "half diminished (locrian)", "RH")
+gen_scale("WHWHWHWH", 1, "diminished (whole-half)", "RH")
