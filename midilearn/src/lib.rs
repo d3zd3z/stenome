@@ -186,6 +186,23 @@ impl MidiLearn {
             return Err(format!("Invalid type: {:?}", json["type"].as_str()).into());
         }
     }
+
+    /// Record a lick (or chord progression) and output the MIDI note values.
+    pub fn record_lick(&mut self) -> Result<()> {
+        println!("Play exercise");
+        self.drain()?;
+        let user = self.record_scale(6)?;
+
+        // Print the exercise out nicely.  This allocates a lot of strings, but efficiency isn't
+        // really a concern here.
+        let full: Vec<String> = user.iter().map(|ch| {
+            let notes: Vec<String> = ch.iter().map(|&Note(n)| n.to_string()).collect();
+            format!("[{}]", notes.join(","))
+        }).collect();
+        println!("    [ {} ]", full.join(","));
+
+        Ok(())
+    }
 }
 
 impl MidiLearn {

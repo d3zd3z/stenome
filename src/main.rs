@@ -18,6 +18,8 @@ fn main() {
         create().unwrap();
     } else if args.len() == 2 && args[0] == "run" {
         stenome::run(&args[1]);
+    } else if args.len() == 1 && args[0] == "record" {
+        stenome::record();
     } else {
         println!("Usage: {{create|run db}}");
     }

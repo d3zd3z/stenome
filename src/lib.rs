@@ -19,8 +19,6 @@ extern crate tempdir;
 use std::error;
 use std::result;
 
-#[cfg(feature = "midi")]
-use midilearn::MidiLearn;
 pub use stroke::Stroke;
 // pub use words::{Counts, LearnWord, Words, Store};
 use timelearn::Store;
@@ -37,6 +35,8 @@ mod simple;
 mod steno;
 pub mod legacy;
 
+pub use midi::record;
+
 pub fn run(path: &str) {
     let st = Store::open(path).unwrap();
 
@@ -45,7 +45,7 @@ pub fn run(path: &str) {
     } else if st.get_kind() == "simple" {
         run_simple(st);
     } else if st.get_kind() == "midi" {
-        run_midi(st);
+        midi::run_midi(st);
     } else {
         panic!("Unknown store type '{}'", st.get_kind());
     }
@@ -64,16 +64,34 @@ fn run_simple(st: Store) {
 }
 
 #[cfg(feature = "midi")]
-fn run_midi(st: Store) {
-    MidiLearn::with_new(|user: &mut MidiLearn| {
-        let mut learn = Learn::new(st, user);
-        learn.run();
-    }).unwrap();
+mod midi {
+    use learn::Learn;
+    use midilearn::MidiLearn;
+    use timelearn::Store;
+
+    pub fn run_midi(st: Store) {
+        MidiLearn::with_new(|user: &mut MidiLearn| {
+            let mut learn = Learn::new(st, user);
+            learn.run();
+        }).unwrap();
+    }
+
+    pub fn record() {
+        MidiLearn::with_new(|user: &mut MidiLearn| {
+            user.record_lick().unwrap();
+        }).unwrap();
+    }
 }
 
 #[cfg(not(feature = "midi"))]
-fn run_midi(_st: Store) {
-    panic!("Program not built with midi support");
+mod midi {
+    pub fn run_midi(_st: Store) {
+        panic!("Program not built with midi support");
+    }
+
+    pub fn record() {
+        panic!("Program not built with midi support");
+    }
 }
 
 // Format an interval (in seconds) in terms of nicer units.
