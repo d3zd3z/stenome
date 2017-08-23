@@ -38,7 +38,8 @@ println("DELETE FROM probs;")
 gen_scale("WWHWWWH", "major")
 
 # The rest of the scales, just right hand.
-gen_scale("WHWWWHW", 1, "minor (dorian)", "RH")
-gen_scale("WWHWWHW", 1, "dominant (mixolydian)", "RH")
-gen_scale("HWWHWWW", 1, "half diminished (locrian)", "RH")
-gen_scale("WHWHWHWH", 1, "diminished (whole-half)", "RH")
+gen_scale("WHWWWHW", 2, "minor (dorian)", "2H")
+gen_scale("WWHWWHW", 2, "dominant (mixolydian)", "2H")
+gen_scale("HWWHWWW", 2, "half diminished (locrian)", "2H")
+#gen_scale("WHWHWHWH", 2, "diminished (whole-half)", "2H")
+gen_scale("WHWHWHWH", "diminished (whole-half)")
