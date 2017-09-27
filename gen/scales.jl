@@ -15,22 +15,22 @@ end
 
 key_names = [ "C", "G", "D", "A", "E", "B", "F♯", "G♭", "D♭", "A♭", "E♭", "B♭", "F" ]
 
-function gen_scale(ival, hands, name, hand)
+function gen_scale(ival, hands, name, hand; style="updown", octaves=2)
     for key in key_names
         answer = Dict("type" => "scale",
             "base" => key,
             "intervals" => ival,
             "hands" => hands,
-            "octaves" => 2,
-            "style" => "updown")
+            "octaves" => octaves,
+            "style" => style)
         emit("$hand-scale $key $name", JSON.json(answer))
     end
 end
 
-function gen_scale(ival, name)
-    gen_scale(ival, 1, name, "RH")
-    gen_scale(ival, 1, name, "LH")
-    gen_scale(ival, 2, name, "2H")
+function gen_scale(ival, name; style="updown", octaves=2)
+    gen_scale(ival, 1, name, "RH", style=style, octaves=octaves)
+    gen_scale(ival, 1, name, "LH", style=style, octaves=octaves)
+    gen_scale(ival, 2, name, "2H", style=style, octaves=octaves)
 end
 
 println("DELETE FROM probs;")
@@ -44,3 +44,7 @@ gen_scale("HWWHWWW", 2, "half diminished (locrian)", "2H")
 #gen_scale("WHWHWHWH", 2, "diminished (whole-half)", "2H")
 gen_scale("WHWHWHWH", "diminished (whole-half)")
 gen_scale("HWHWHWHW", 2, "sym-dom (half-whole)", "2H")
+
+# Right hand scales of patterns.
+gen_scale("WWHWWWH", 1, "major 3rds up up", "RH", style="3up",
+    octaves=1)
