@@ -19,7 +19,13 @@ impl ScaleSeq {
         let mut first = base;
         let mut last = base;
         let mut notes = vec![base];
-        for _ in 0 .. scale.octaves {
+        // For the '3up' exercise, extend by 2 octaves to generate the other notes.
+        let octaves = if scale.style == "3up" {
+            scale.octaves + 2
+        } else {
+            scale.octaves
+        };
+        for _ in 0 .. octaves {
             for ch in scale.intervals.chars() {
                 let next = match ch {
                     'H' => 1,
@@ -46,6 +52,23 @@ impl ScaleSeq {
                 let mut other = notes.clone();
                 other.reverse();
                 notes.extend(other.iter().skip(1));
+            }
+            "3up" => {
+                // Go up and down in broken thirds going up.
+                // We need to extend the scale by one note in each direction.
+                let orig = notes;
+                let per_octave = (orig.len() - 1) / octaves as usize;
+                notes = vec![];
+                for i in per_octave .. 2 * per_octave {
+                    notes.push(orig[i]);
+                    notes.push(orig[i + 2]);
+                }
+                for i in (per_octave - 1 .. 2 * per_octave + 1).rev() {
+                    notes.push(orig[i]);
+                    notes.push(orig[i + 2]);
+                }
+                // End with the starting note.
+                notes.push(orig[per_octave]);
             }
             style => return Err(format!("Unknown scale style: {:?}", style).into()),
         }
