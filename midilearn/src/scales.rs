@@ -7,7 +7,7 @@ use note::Note;
 /// A vector of notes that are expected to be played linearly.  The notes can be played legato.
 /// The inner vector holds notes that should be played simultaneously, such as with both hands.
 #[derive(Debug)]
-pub struct ScaleSeq(Vec<Vec<Note>>);
+pub struct ScaleSeq(pub Vec<Vec<Note>>);
 
 impl ScaleSeq {
     /// Generate the sequence for the described scale.

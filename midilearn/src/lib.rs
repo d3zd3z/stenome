@@ -123,12 +123,12 @@ impl MidiLearn {
             let scale: Scale = serde_json::from_value(json)?;
 
             let mut seq = ScaleSeq::from_scale(&scale)?;
-            // println!("scale: {:?}", seq);
 
             self.drain()?;
             let user = self.record_scale(6)?;
-            // println!("Played: {:?}", user);
             if seq.adjust_octave(&user) {
+                // println!("scale : {:?}", nicely(&seq.0));
+                // println!("Played: {:?}", nicely(&user));
                 // println!("First note good: {:?}", seq);
                 let diff_count = seq.differences(&user);
                 println!("There are {} differences", diff_count);
@@ -271,6 +271,13 @@ impl Write for MidiLearn {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         io::stdout().write(buf)
     }
+}
+
+#[allow(dead_code)]
+fn nicely(notes: &[Vec<Note>]) -> Vec<Vec<u8>> {
+    notes.iter().map(|ch| {
+        ch.iter().map(|n| n.0).collect()
+    }).collect()
 }
 
 // Determine if the json has a the given type.
