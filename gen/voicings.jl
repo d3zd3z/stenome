@@ -169,6 +169,20 @@ guide137_voicing = let
     Voicing("guide", [minor, dominant, major])
 end
 
+guide73_voicing = let
+    minor = ChordVoicing(0, [], [10, 5])
+    dominant = ChordVoicing(-7, [], [16, 6])
+    major = ChordVoicing(5, [], [11, 5])
+    Voicing("guide", [minor, dominant, major])
+end
+
+guide37_voicing = let
+    minor = ChordVoicing(0, [], [15, 7])
+    dominant = ChordVoicing(5, [], [10, 6])
+    major = ChordVoicing(-7, [], [16, 7])
+    Voicing("guide", [minor, dominant, major])
+end
+
 function generate()
     println("DELETE FROM probs;")
 
@@ -207,6 +221,14 @@ function generate()
 
     # Exercise 2-1B, ii-V-I, guide tones, 1-3-7 first.
     gen_cycle("2-1B", major_iivi, guide137_voicing, "1-3-7", chord_start=3)
+
+    # Repeat of the above, but rootless.
+    gen_cycle("2-1Ar", major_iivi, guide73_voicing, "7-3")
+    gen_cycle("2-1Br", major_iivi, guide37_voicing, "3-7")
+    gen_cycle("2-1Ar", major_iivi, guide37_voicing, "7-3", chord_start=2)
+    gen_cycle("2-1Br", major_iivi, guide73_voicing, "3-7", chord_start=2)
+    gen_cycle("2-1Ar", major_iivi, guide73_voicing, "7-3", chord_start=3)
+    gen_cycle("2-1Br", major_iivi, guide37_voicing, "3-7", chord_start=3)
 
     if false
         # Exercise 2-4A, Diminshed / Tri-tone sub, guide tones, 1-7-3 first.
