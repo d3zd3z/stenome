@@ -85,6 +85,8 @@ mod midi {
 
 #[cfg(not(feature = "midi"))]
 mod midi {
+    use timelearn::Store;
+
     pub fn run_midi(_st: Store) {
         panic!("Program not built with midi support");
     }
