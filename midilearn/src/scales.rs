@@ -19,8 +19,9 @@ impl ScaleSeq {
         let mut first = base;
         let mut last = base;
         let mut notes = vec![base];
-        // For the '3up' exercise, extend by 2 octaves to generate the other notes.
-        let octaves = if scale.style == "3up" {
+        // For the simple exercise, just use the given octavies,  For the arp-type, add an octave
+        // at each end.
+        let octaves = if scale.style == "3up" || scale.style == "3upr" {
             scale.octaves + 2
         } else {
             scale.octaves
@@ -45,6 +46,25 @@ impl ScaleSeq {
             first = last;
         }
 
+        fn build_pattern(orig: &[Note], octaves: u32, which: &[usize]) -> Vec<Note> {
+            let per_octave = (orig.len() - 1) / octaves as usize;
+            let mut notes = vec![];
+            for i in per_octave .. 2 * per_octave {
+                for off in which {
+                    notes.push(orig[i + *off]);
+                }
+            }
+            for i in (per_octave - 1 .. 2 * per_octave + 1).rev() {
+                for off in which {
+                    notes.push(orig[i + *off]);
+                }
+            }
+            // And end with the starting note.
+            notes.push(orig[per_octave]);
+
+            notes
+        }
+
         // Generate the appropriate scale type.
         match scale.style.as_str() {
             "updown" => {
@@ -56,19 +76,13 @@ impl ScaleSeq {
             "3up" => {
                 // Go up and down in broken thirds going up.
                 // We need to extend the scale by one note in each direction.
-                let orig = notes;
-                let per_octave = (orig.len() - 1) / octaves as usize;
-                notes = vec![];
-                for i in per_octave .. 2 * per_octave {
-                    notes.push(orig[i]);
-                    notes.push(orig[i + 2]);
-                }
-                for i in (per_octave - 1 .. 2 * per_octave + 1).rev() {
-                    notes.push(orig[i]);
-                    notes.push(orig[i + 2]);
-                }
-                // End with the starting note.
-                notes.push(orig[per_octave]);
+                notes = build_pattern(&notes, octaves, &[0, 2]);
+            }
+            "3upr" => {
+                // Go up and down in broken thirds going up.
+                // We need to extend the scale by one note in each direction.
+                // With the pairs reversed.
+                notes = build_pattern(&notes, octaves, &[2, 0]);
             }
             style => return Err(format!("Unknown scale style: {:?}", style).into()),
         }

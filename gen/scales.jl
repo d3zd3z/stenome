@@ -45,10 +45,16 @@ gen_scale("HWWHWWW", 2, "half diminished (locrian)", "2H")
 gen_scale("WHWHWHWH", "diminished (whole-half)")
 gen_scale("HWHWHWHW", 2, "sym-dom (half-whole)", "2H")
 
-# Right hand scales of patterns.
-gen_scale("WWHWWWH", 1, "major 3rds up up", "RH", style="3up",
+# Simple patterns on major.
+gen_scale("WWHWWWH", 1, "major 3rds", "RH", style="3up",
     octaves=1)
-gen_scale("WWHWWWH", 1, "major 3rds up up", "LH", style="3up",
+gen_scale("WWHWWWH", 1, "major 3rds", "LH", style="3up",
     octaves=1)
-gen_scale("WWHWWWH", 2, "major 3rds up up", "2H", style="3up",
+gen_scale("WWHWWWH", 2, "major 3rds", "2H", style="3up",
+    octaves=1)
+gen_scale("WWHWWWH", 1, "major 3rds rev", "RH", style="3upr",
+    octaves=1)
+gen_scale("WWHWWWH", 1, "major 3rds rev", "LH", style="3upr",
+    octaves=1)
+gen_scale("WWHWWWH", 2, "major 3rds rev", "2H", style="3upr",
     octaves=1)
