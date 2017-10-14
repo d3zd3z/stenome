@@ -48,3 +48,7 @@ gen_scale("HWHWHWHW", 2, "sym-dom (half-whole)", "2H")
 # Right hand scales of patterns.
 gen_scale("WWHWWWH", 1, "major 3rds up up", "RH", style="3up",
     octaves=1)
+gen_scale("WWHWWWH", 1, "major 3rds up up", "LH", style="3up",
+    octaves=1)
+gen_scale("WWHWWWH", 2, "major 3rds up up", "2H", style="3up",
+    octaves=1)
