@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 
@@ -102,5 +103,27 @@ func TestLearn(t *testing.T) {
 	if prob[0].Question != prob2[0].Question {
 		t.Fatalf("New problem returned isn't one we expect to learn: %q, %q",
 			prob[0].Question, prob[1].Question)
+	}
+
+	counts, err := db.GetCounts()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	goodCounts := &timelearn.Counts{
+		Active:    1,
+		Later:     0,
+		Unlearned: 9,
+		Buckets: []timelearn.Bucket{
+			timelearn.Bucket{"sec", 1},
+			timelearn.Bucket{"min", 0},
+			timelearn.Bucket{"hr", 0},
+			timelearn.Bucket{"day", 0},
+			timelearn.Bucket{"mon", 0},
+		},
+	}
+
+	if !reflect.DeepEqual(counts, goodCounts) {
+		t.Fatalf("Statistics mismatch %+v != %+v", counts, goodCounts)
 	}
 }
