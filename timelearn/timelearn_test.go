@@ -125,11 +125,11 @@ func TestLearn(t *testing.T) {
 		Later:     0,
 		Unlearned: 9,
 		Buckets: []timelearn.Bucket{
-			timelearn.Bucket{"sec", 1},
-			timelearn.Bucket{"min", 0},
-			timelearn.Bucket{"hr", 0},
-			timelearn.Bucket{"day", 0},
-			timelearn.Bucket{"mon", 0},
+			{Name: "sec", Count: 1},
+			{Name: "min", Count: 0},
+			{Name: "hr", Count: 0},
+			{Name: "day", Count: 0},
+			{Name: "mon", Count: 0},
 		},
 	}
 
