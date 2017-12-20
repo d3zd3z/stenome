@@ -26,7 +26,7 @@ func (t *T) GetNexts(count int) ([]*Problem, error) {
 		WHERE probs.id = learning.probid
 			AND next <= ?
 		ORDER BY next
-		LIMIT ?`, t.now(), count)
+		LIMIT ?`, timeToDb(t.now()), count)
 	if err != nil {
 		return nil, err
 	}
