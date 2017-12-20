@@ -71,20 +71,28 @@ func (t *T) GetNexts(count int) ([]*Problem, error) {
 }
 
 // Get a problem that hasn't started being learned.  The interval and
-// next will be set appropriately for a new problem.
+// next will be set appropriately for a new problem.  If there are no
+// new problems, the result will be (nil, nil).
 // TODO: Set the interval based on a configurable value, as the
 // default depends on the problem types.
 func (t *T) GetNew() (*Problem, error) {
 	var p Problem
-	err := t.conn.QueryRow(`
+	rows, err := t.conn.QueryContext(context.Background(), `
 		SELECT id, question, answer
 		FROM probs
 		WHERE ID NOT IN (SELECT probid FROM learning)
 		ORDER BY id
-		LIMIT 1`).Scan(&p.id, &p.Question, &p.Answer)
+		LIMIT 1`)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
+	err = rows.Scan(&p.id, &p.Question, &p.Answer)
 
 	p.Next = t.now()
 	p.Interval = 5 * time.Second
