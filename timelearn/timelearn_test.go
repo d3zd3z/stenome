@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -100,9 +101,18 @@ func TestLearn(t *testing.T) {
 		t.Fatalf("GetNexts didn't return a problem")
 	}
 
+	// The problems may get = " NEW" appended to them.
+	if !strings.HasSuffix(prob[0].Question, " NEW") {
+		prob[0].Question += " NEW"
+	}
+
+	if !strings.HasSuffix(prob2[0].Question, " NEW") {
+		prob2[0].Question += " NEW"
+	}
+
 	if prob[0].Question != prob2[0].Question {
 		t.Fatalf("New problem returned isn't one we expect to learn: %q, %q",
-			prob[0].Question, prob[1].Question)
+			prob[0].Question, prob2[0].Question)
 	}
 
 	counts, err := db.GetCounts()
