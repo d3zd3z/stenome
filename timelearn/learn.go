@@ -60,6 +60,9 @@ func (t *T) GetNexts(count int) ([]*Problem, error) {
 		}
 
 		if prob != nil {
+			// Add a marker to the problem to make it
+			// evident it is new.
+			prob.Question = prob.Question + " NEW"
 			result = append(result, prob)
 		}
 	}
