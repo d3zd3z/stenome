@@ -21,6 +21,8 @@ func (u *simpleUI) Close() error {
 func (u *simpleUI) Single(prob, next *timelearn.Problem) (int, error) {
 	fmt.Printf("Q: %s: ", prob.Question)
 
+	defer fmt.Printf("\n")
+
 	// As a special case, if the answer is just the string "play",
 	// don't wait for space and an answer.
 	if prob.Answer != "play" && prob.Answer != "played" {

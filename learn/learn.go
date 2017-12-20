@@ -94,7 +94,7 @@ func (lr *learner) single(prob, next *timelearn.Problem) (int, error) {
 		}
 	}
 	fmt.Printf("  active : %d\n", active)
-	fmt.Printf("  learned: %d\n", learned)
+	fmt.Printf("  learned: %d\n\n", learned)
 
 	return lr.ui.Single(prob, next)
 }
