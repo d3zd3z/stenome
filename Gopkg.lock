@@ -9,6 +9,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/rakyll/portmidi"
+  packages = ["."]
+  revision = "1246dd47c56089ea2ae791266edb7f4c6b90c045"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   revision = "d585fd2cc9195196078f516b69daff6744ef5e84"
@@ -22,12 +28,15 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "571f7bbbe08da2a8955aed9d4db316e78630e9a3"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "82416ef973efc9a7cc054640888dbd347fb9b92184fef6d8f43429453ce44b02"
+  inputs-digest = "5c700a786bd324049caa35aa73415460942312739421eb499619f4ce2c1084ee"
   solver-name = "gps-cdcl"
   solver-version = 1
