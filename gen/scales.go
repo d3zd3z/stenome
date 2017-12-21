@@ -3,26 +3,46 @@ package gen
 import (
 	"encoding/json"
 	"fmt"
+
+	"davidb.org/x/stenome/timelearn"
 )
 
-func GenScales() error {
+// Replace the scales in the given problem set with newly generated
+// ones.  In order for the results to be meaningful, we rely on the
+// "INTEGER PRIMARY KEY" field in SQLITE3 to always be 1 larger than
+// the current largest value (starting at 1 for an empty table).
+func GenScales(tl *timelearn.T) error {
+
+	tx, err := tl.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = tx.Wipe()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	for _, prac := range scalePractice {
 		for _, hands := range prac.hands {
 			for _, base := range allKeys {
-				err := GenScale(&prac, hands, base)
+				err := GenScale(tx, &prac, hands, base)
 				if err != nil {
+					tx.Rollback()
 					return err
 				}
 			}
 		}
 	}
 
-	return nil
+	err = tx.Commit()
+	return err
 }
 
 var counter = 0
 
-func GenScale(prac *practice, hands, base string) error {
+func GenScale(tx timelearn.Populator, prac *practice, hands, base string) error {
 	numHands := 1
 	if hands == "2H" {
 		numHands = 2
@@ -55,8 +75,9 @@ func GenScale(prac *practice, hands, base string) error {
 	}
 
 	counter++
-	fmt.Printf("%d '%s-scale %s %s': %s\n", counter, hands, base, prac.name, vtext)
-	return nil
+	qn := fmt.Sprintf("%s-scale %s %s", hands, base, prac.name)
+	err = tx.Add(qn, string(vtext))
+	return err
 }
 
 // The order that the keys are practiced in.  We duplicate F♯ and G♭
