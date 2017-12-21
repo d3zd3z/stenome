@@ -1,51 +1,128 @@
 // Learn using midi
 
-package main
+package midilearn // import "davidb.org/x/stenome/midilearn"
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
 	"time"
 
+	"davidb.org/x/stenome/timelearn"
 	"github.com/rakyll/portmidi"
+	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
 
 type Midi struct {
 	in *portmidi.Stream
 }
 
-func main() {
-	fmt.Printf("midi\n")
+func NewMidi() (*Midi, error) {
 	portmidi.Initialize()
-	fmt.Printf("There are %d devices\n", portmidi.CountDevices())
-	fmt.Printf("Default input: %d\n", portmidi.DefaultInputDeviceID())
-
-	for i := 0; i < portmidi.CountDevices(); i++ {
-		fmt.Printf("[%d]: %+v\n", i, portmidi.Info(portmidi.DeviceID(i)))
-	}
-
 	in, err := portmidi.NewInputStream(portmidi.DefaultInputDeviceID(), 1024)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	defer in.Close()
 
-	m := Midi{in: in}
+	return &Midi{in: in}, nil
+}
+
+func (m *Midi) Close() error {
+	return m.in.Close()
+}
+
+func (m *Midi) Single(prob, next *timelearn.Problem) (int, error) {
+	st1, err := m.singleOnce(prob, next)
+	if err != nil {
+		return 0, err
+	}
+	if st1 == 0 {
+		return 0, nil
+	}
+
+	stn := st1
+	for {
+		// If good, return the initial status.
+		if stn == 4 {
+			return st1, nil
+		}
+
+		// If stop requested, return that.
+		if stn == 0 {
+			return 0, nil
+		}
+
+		fmt.Printf("** Mistakes were, please play again **\n")
+		stn, err = m.singleOnce(prob, next)
+		if err != nil {
+			return 0, err
+		}
+	}
+}
+
+// Ask the user once to play.
+func (m *Midi) singleOnce(prob, next *timelearn.Problem) (int, error) {
+	fmt.Printf("Play: %s\n", prob.Question)
+	if next != nil {
+		fmt.Printf("      %s\n", next.Question)
+	}
+
+	var chords Chords
+	err := json.Unmarshal([]byte(prob.Answer), &chords)
+	if err != nil {
+		return 0, err
+	}
+	// fmt.Printf("%v\n", chords)
 
 	err = m.Drain()
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 
-	fmt.Printf("Start playing\n")
-
-	notes, err := m.Record(8)
+	user, err := m.Record(6)
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 
-	fmt.Printf("Notes: %+v", notes)
+	if adjustOctave(user, chords.Chords) {
+		// The levenshtein distance uses []rune, so convert to
+		// a possibly meaningless, but working rune sequence
+		// for comparison.
+		uu := runify(user)
+		ee := runify(chords.Chords)
+
+		// fmt.Printf("Compare:\n   %q\nto %q\n", uu, ee)
+
+		dist := levenshtein.DistanceForStrings(ee, uu, levenshtein.DefaultOptions)
+		fmt.Printf("There are %d differences", dist)
+		if dist <= 3 {
+			return (4 - dist), nil
+		}
+
+		return 1, nil
+	} else {
+		fmt.Printf("First note mismatch, stopping\n")
+		return 0, nil
+	}
+
+	return 0, nil
+}
+
+// Midi notes can take values from 0 to 127.  Pack the notes into a
+// slice of runes with separators using an invalid midi note value.
+// The extra separator doesn't hurt anything.
+func runify(notes [][]Note) []rune {
+	var result []rune
+	for _, ch := range notes {
+		result = append(result, 256)
+
+		for _, n := range ch {
+			result = append(result, rune(n))
+		}
+	}
+
+	return result
 }
 
 // Drain any queued midi events.
@@ -131,6 +208,11 @@ func (c *capture) addIdle() {
 	if len(c.notes) == 0 {
 		c.idleCount = 0
 	}
+}
+
+type Chords struct {
+	Type   string   `json:"type"`
+	Chords [][]Note `json:"chords"`
 }
 
 type Note uint8

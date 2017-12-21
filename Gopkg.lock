@@ -15,6 +15,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/texttheater/golang-levenshtein"
+  packages = ["levenshtein"]
+  revision = "1a14278c506abae7c17b3cb0b84ae863c7300454"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   revision = "d585fd2cc9195196078f516b69daff6744ef5e84"
@@ -37,6 +43,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5c700a786bd324049caa35aa73415460942312739421eb499619f4ce2c1084ee"
+  inputs-digest = "1b42c1fbe0381be96ffc0095d7290439e88637ec5063d326bee3da2fcf0e2c9a"
   solver-name = "gps-cdcl"
   solver-version = 1
