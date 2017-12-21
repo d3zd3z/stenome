@@ -4,17 +4,33 @@ import (
 	"fmt"
 	"os"
 
+	"davidb.org/x/stenome/gen"
 	"davidb.org/x/stenome/learn"
 	"davidb.org/x/stenome/timelearn"
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Printf("Usage: stenome lesson.db\n")
+	if len(os.Args) != 3 {
+		fmt.Printf("Usage: stenome [run|gen] lesson.db\n")
 		return
 	}
 
-	tl, err := timelearn.Open(os.Args[1])
+	if os.Args[1] == "gen" {
+		err := gen.GenScales()
+		if err != nil {
+			fmt.Printf("Error generating scales: %q\n", err)
+			return
+		}
+
+		return
+	}
+
+	if os.Args[1] != "run" {
+		fmt.Printf("Unknown command\n")
+		return
+	}
+
+	tl, err := timelearn.Open(os.Args[2])
 	if err != nil {
 		fmt.Printf("Error with database: %q\n", err)
 		return

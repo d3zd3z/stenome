@@ -5,8 +5,8 @@ import (
 )
 
 type Voicing struct {
-	Chords [][]int
-	Type   string
+	Chords [][]Note `json:"chords"`
+	Type   string   `json:"type"`
 }
 
 type Note int
