@@ -5,7 +5,7 @@ authors = ["davidb"]
 
 [dependencies]
 rand = "0.3"
-rusqlite = "0.12"
+rusqlite = "0.14.0"
 
 [dev-dependencies]
 tempdir = "0.3"
